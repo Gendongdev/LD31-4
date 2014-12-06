@@ -44,4 +44,11 @@ TODO:
 		- others 1000
 		- buildings - unwalkable - eventually
 
-- some sort of threat
+- mortars - destroy structures, lots of damage to soliders
+- do more with morale:
+	- if drops to zero, flee to random point off the map - can still fall while fleeing
+	- once off map, regain points then come back
+
+- win condition
+- lose condition
+	- all soldiers dead or fleeing?

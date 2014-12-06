@@ -216,7 +216,7 @@ public class MapController : MonoBehaviour
             guo.addPenalty = 1;
         } else
         {
-            guo.addPenalty = 10000;
+            guo.addPenalty = 30000;
         }
 
         AstarPath.active.UpdateGraphs(guo);

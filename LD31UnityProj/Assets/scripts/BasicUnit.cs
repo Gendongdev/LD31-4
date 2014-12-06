@@ -12,14 +12,18 @@ public class BasicUnit : MonoBehaviour
     public int HitPoints = 10;
     public int MoralePoints = 10;
     public float CheckTime = 0.25f;
-    public float MoveSpeed = 0.1f;
+    public float MoveSpeed = 10f;
+    public float MoraleRecoverTime = 0.5f;
 
     public Job MyJob;
     public Path Path;
+    public bool inTrench = true;
+    public bool isFleeing = false;
 
     private JobQueue queue;
     private MapController mapController;
     private float nextCheckTime;
+    private float nextMoraleTime;
     private Seeker seeker;
     private int currentWayPoint = 0;
 
@@ -35,14 +39,47 @@ public class BasicUnit : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        if (MyJob == null)
+        if (HitPoints <= 0)
         {
-            GetJob();
+            Die();
+        }
+        if (MoralePoints <= 0 & !isFleeing)
+        {
+            isFleeing = true;
+            seeker.StartPath(transform.position, new Vector2(Random.Range(0, mapController.MapX), 0), OnPathComplete);
+            nextMoraleTime = Time.time + MoraleRecoverTime;
+
+            // return job to queue.
+            if (MyJob != null)
+            {
+                queue.Jobs.Add(MyJob);
+                MyJob = null;
+            }
+        }
+
+        if (!isFleeing)
+        {
+            if (MyJob == null)
+            {
+                GetJob();
+            } else
+            {
+                Move();
+                DoJob();
+            }
         } else
         {
-            MoveToJob();
-            DoJob();
+            Flee();
+        }
+
+        Vector2 center_pos = (Vector2)transform.position + new Vector2(0.5f, 0.5f);
+        if (mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)] 
+            <= Tiles.Built_Empty)
+        {
+            inTrench = false;
+        } else
+        {
+            inTrench = true;
         }
 
     }
@@ -59,7 +96,10 @@ public class BasicUnit : MonoBehaviour
             float action_chance = Random.Range(0, MAX_MORALE + MORALE_CHANCE);
             
             if (MoralePoints < action_chance)
+            {
+                Debug.Log("Morale too low. Needed " + action_chance + ", had " + MoralePoints);
                 return;
+            }
 
             Vector2 current_pos = transform.position;
             float job_distance = float.PositiveInfinity;
@@ -84,7 +124,7 @@ public class BasicUnit : MonoBehaviour
         }
     }
 
-    private void MoveToJob()
+    private void Move()
     {
         if (Path == null)
         {
@@ -92,7 +132,6 @@ public class BasicUnit : MonoBehaviour
         }
         if (currentWayPoint >= this.Path.vectorPath.Count)
         {
-            Debug.Log("End of path reached.");
             return;
         }
 
@@ -136,9 +175,34 @@ public class BasicUnit : MonoBehaviour
         }
     }
 
+    private void Die()
+    {
+        Debug.Log("I died!");
+
+        if (MyJob != null)
+            queue.Jobs.Add(MyJob);
+
+        Destroy(gameObject);
+    }
+
+    private void Flee()
+    {
+        Move();
+
+        if (Time.time > nextMoraleTime)
+        {
+            MoralePoints += 1;
+            if (MoralePoints == MAX_MORALE)
+            {
+                isFleeing = false;
+            }
+
+            nextMoraleTime = Time.time + MoraleRecoverTime;
+        }
+    }
+
     public void OnPathComplete(Path p)
     {
-        Debug.Log("Got path back. " + p.error);
         if (!p.error)
         {
             Path = p;

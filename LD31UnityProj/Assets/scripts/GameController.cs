@@ -9,11 +9,16 @@ public class GameController : MonoBehaviour
     public int MapX = 34;
     public int MapY = 34;
     public GameObject SoldierPrefab;
-    public Transform SoldierTransform;
-    public int ReinforcementsTime = 20;
+    public GameObject EnemyBulletPrefab;
+    public Transform UnitTransform;
+
+    public float ReinforcementsTime = 20f;
+    public float EnemyMachineGunRate = 0.2f;
+    public int FirstEnemyMachineGunTime = 5;
 
     private MapController mapController;
     private float nextReinforcement;
+    private float nextEnemyBullet;
 
     // Use this for initialization
     void Start()
@@ -28,6 +33,8 @@ public class GameController : MonoBehaviour
         AddSoldier();
 
         nextReinforcement = Time.time + ReinforcementsTime;
+        nextEnemyBullet = Time.time + FirstEnemyMachineGunTime;
+
     }
     
     // Update is called once per frame
@@ -39,6 +46,12 @@ public class GameController : MonoBehaviour
         {
             AddSoldier();
             nextReinforcement = Time.time + ReinforcementsTime;
+        }
+
+        if (Time.time >= nextEnemyBullet)
+        {
+            AddEnemyBullet();
+            nextEnemyBullet = Time.time + EnemyMachineGunRate;
         }
     }
 
@@ -71,6 +84,13 @@ public class GameController : MonoBehaviour
     {
         int soldier_x = Random.Range(0, MapX);
         GameObject new_soldier = (GameObject)Instantiate(SoldierPrefab, new Vector2(soldier_x, 0), Quaternion.identity);
-        new_soldier.GetComponent<Transform>().SetParent(SoldierTransform);
+        new_soldier.GetComponent<Transform>().SetParent(UnitTransform);
+    }
+
+    void AddEnemyBullet()
+    {
+        int bullet_y = Random.Range(0, MapX);
+        GameObject new_bullet = (GameObject)Instantiate(EnemyBulletPrefab, new Vector2(bullet_y, MapY), Quaternion.identity);
+        new_bullet.GetComponent<Transform>().SetParent(UnitTransform);
     }
 }
