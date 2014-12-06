@@ -1,0 +1,42 @@
+- UI:
+	- main game screen
+	- right side: 
+		- selected unit
+		- actions
+	- bottom - count-down to next event
+
+- gameplay:
+	- no mans land at the top
+	- dig
+	- gun placements
+	- reinforcements
+	- units can't be directly controlled
+		- different types of agents:
+			- 
+- enemy is at top of screen
+
+- fires randomly:
+	- machine gun fire - straight line - only hits people out of trenches - reduces morale of those in trenches
+	- shells/mortars - destroys structures, injures people in trenches
+
+	- shell attacks are weighted towards the top of the screen
+
+victory: get some number of troops over the op
+
+troops:
+	- simple agents
+	- two stats: HP and morale
+	- when HP = 0, they die
+		- reduced by being hit
+	- when morale = 0, they flee off bottom of map
+		- move more slowly as morale drops
+	- some mechanism to repair each?
+	- they'll take jobs, ie build trench, build gun emplacements, etc etc
+		- take closes?
+	- pathfinding: can pathfind outside of trenches, but more vulnerable - prefer in trenches as much as possible
+
+
+TODO:
+- create troop agent
+- expand map to have idea of things that are built and just queued
+- as tiles place/remove actions are queued, agents path to them and complete them
