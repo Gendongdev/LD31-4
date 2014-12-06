@@ -19,6 +19,7 @@ public class GameController : MonoBehaviour
         mapController.MapY = MapY;
         mapController.TileArray = new Tiles[MapX, MapY];
         mapController.GameObjectArray = new GameObject[MapX, MapY];
+        mapController.InitMap();
     }
     
     // Update is called once per frame

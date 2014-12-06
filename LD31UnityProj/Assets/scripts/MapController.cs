@@ -46,14 +46,25 @@ public class MapController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Debug.Log((Tiles)((int)Tiles.Point + (int)Tiles.Built_Empty));
-        queue = GameObject.Find("game_controller").GetComponent<JobQueue>();
+        queue = GameObject.Find("game_controller").GetComponent<JobQueue>();                
     }
     
     // Update is called once per frame
     void Update()
     {
     
+    }
+
+    public void InitMap()
+    {
+        for (int x = 0; x < MapX; x++)
+        {
+            for (int y = 0; y < MapY; y++)
+            {
+                TileArray[x, y] = Tiles.Empty;
+                UpdateTileObject(x, y);
+            }
+        }
     }
 
     public bool PlaceTile(Vector2 location)
@@ -128,6 +139,15 @@ public class MapController : MonoBehaviour
         return true;
     }
 
+    public void BuildTrench(int x, int y)
+    {
+        if (TileArray[x, y] < Tiles.Built_Empty)
+        {
+            TileArray[x, y] = (Tiles)((int)TileArray[x, y] + (int)Tiles.Built_Empty);
+            UpdateTileObject(x, y);
+        }
+    }
+
     private void RefreshTile(int x, int y)
     {
         if (TileArray[x, y] != Tiles.Empty)
@@ -149,7 +169,7 @@ public class MapController : MonoBehaviour
     private void UpdateTileObject(int x, int y)
     {
         Destroy(GameObjectArray[x, y]);
-        GameObject newObject = (GameObject)Instantiate(TileSprites[(int)TileArray[x, y]], new Vector3(x, y), 
+        GameObject newObject = (GameObject)Instantiate(TileSprites[(int)TileArray[x, y]], new Vector3(x, y, 1f), 
                                                        Quaternion.identity);
 
         Transform newTransform = newObject.GetComponent<Transform>();
