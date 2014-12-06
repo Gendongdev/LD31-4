@@ -37,6 +37,7 @@ troops:
 
 
 TODO:
-- create troop agent
-- expand map to have idea of things that are built and just queued
-- as tiles place/remove actions are queued, agents path to them and complete them
+
+- pathfinding for troops - stay in trenches as much as possible
+- some sort of threat
+- reinforcements???
