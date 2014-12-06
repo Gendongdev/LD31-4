@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Pathfinding;
 
 public class BasicUnit : MonoBehaviour
 {
@@ -14,10 +15,13 @@ public class BasicUnit : MonoBehaviour
     public float MoveSpeed = 0.1f;
 
     public Job MyJob;
+    public Path Path;
 
     private JobQueue queue;
     private MapController mapController;
     private float nextCheckTime;
+    private Seeker seeker;
+    private int currentWayPoint = 0;
 
     // Use this for initialization
     void Start()
@@ -25,6 +29,7 @@ public class BasicUnit : MonoBehaviour
         queue = GameObject.Find("game_controller").GetComponent<JobQueue>();
         mapController = GameObject.Find("map").GetComponent<MapController>();
         nextCheckTime = Time.time;
+        seeker = GetComponent<Seeker>();
     }
     
     // Update is called once per frame
@@ -74,26 +79,39 @@ public class BasicUnit : MonoBehaviour
             if (MyJob != null)
             {
                 queue.Jobs.Remove(MyJob);
+                seeker.StartPath(transform.position, new Vector2(MyJob.Location[0], MyJob.Location[1]), OnPathComplete);
             }
         }
     }
 
     private void MoveToJob()
     {
+        if (Path == null)
+        {
+            return;
+        }
+        if (currentWayPoint >= this.Path.vectorPath.Count)
+        {
+            Debug.Log("End of path reached.");
+            return;
+        }
+
         Vector2 current_pos = transform.position;
-        Vector2 dest_pos = new Vector2(MyJob.Location[0], MyJob.Location[1]);
+        Vector2 dest_pos = this.Path.vectorPath[currentWayPoint];
+
         Vector2 direction_vector = (dest_pos - current_pos);
         
         float distance = direction_vector.magnitude;
-        if (distance > MoveSpeed)
+        if (distance > MoveSpeed * Time.deltaTime)
         {
-            float x_move = direction_vector.normalized.x * MoveSpeed;
-            float y_move = direction_vector.normalized.y * MoveSpeed;
+            float x_move = direction_vector.normalized.x * MoveSpeed * Time.deltaTime;
+            float y_move = direction_vector.normalized.y * MoveSpeed * Time.deltaTime;
             Vector2 movement_vector = new Vector2(x_move, y_move);
             transform.position = current_pos + (movement_vector);
         } else
         {
             transform.position = dest_pos;
+            currentWayPoint++;
         }
         
         Debug.DrawLine(current_pos, dest_pos);
@@ -117,5 +135,14 @@ public class BasicUnit : MonoBehaviour
             }
         }
     }
-}
 
+    public void OnPathComplete(Path p)
+    {
+        Debug.Log("Got path back. " + p.error);
+        if (!p.error)
+        {
+            Path = p;
+            currentWayPoint = 0;
+        }
+    }
+}

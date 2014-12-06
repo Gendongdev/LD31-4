@@ -39,12 +39,9 @@ troops:
 TODO:
 
 - pathfinding for troops - stay in trenches as much as possible
-	- instantiate the pathfinding graph
-	- replace MoveToJob with something using pathfinding
 	- graph update: take into account penalty
 		- trench 0
 		- others 1000
 		- buildings - unwalkable - eventually
-- some sort of threat
-- reinforcements???
 
+- some sort of threat

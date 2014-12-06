@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Pathfinding;
 
 public enum Tiles
 {
@@ -207,6 +208,20 @@ public class MapController : MonoBehaviour
         Transform newTransform = newObject.GetComponent<Transform>();
         newTransform.parent = MapTransform;
         GameObjectArray[x, y] = newObject;
+
+        GraphUpdateObject guo = new GraphUpdateObject(new Bounds(new Vector3(x, y), new Vector3(0.99f, 0.99f, 1)));
+
+        if (TileArray[x, y] > Tiles.Built_Empty)
+        {
+            guo.addPenalty = 1;
+        } else
+        {
+            guo.addPenalty = 10000;
+        }
+
+        AstarPath.active.UpdateGraphs(guo);
+
+
     }
 
     private Tiles CheckNeighbours(int x, int y)
