@@ -82,13 +82,12 @@ public class BasicUnit : MonoBehaviour
         }
 
         Vector2 center_pos = (Vector2)transform.position + new Vector2(0.5f, 0.5f);
-        if (mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)] 
-            <= Tile.Built_Empty)
-        {
-            inTrench = false;
-        } else
+        if (TileHelper.IsBuiltTrench(mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)]))
         {
             inTrench = true;
+        } else
+        {
+            inTrench = false;
         }
 
         int hit_sprite_index = HitPoints;
@@ -194,9 +193,19 @@ public class BasicUnit : MonoBehaviour
 
             if (MyJob.TimeLeft <= 0)
             {
-                mapController.BuildTrench(MyJob.Location[0], MyJob.Location[1]);
-                // Debug.Log("Job's done!");
-                MyJob = null;
+                switch (MyJob.Type)
+                {
+                    case JobType.Dig_Trench:
+                        mapController.BuildTrench(MyJob.Location[0], MyJob.Location[1]);
+                    // Debug.Log("Job's done!");
+                        MyJob = null;
+                        break;
+
+                    case JobType.Build_Wall:
+                        mapController.BuildWall(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
+                }
             }
         }
     }

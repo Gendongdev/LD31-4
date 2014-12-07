@@ -111,7 +111,7 @@ public class MapController : MonoBehaviour
         int[] location_array = new int[2] {x, y};
         
         // check if tile is empty
-        if (TileHelper.IsTrench(TileArray[x, y]))
+        if (!TileHelper.IsEmpty(TileArray[x, y]))
         {
             Debug.Log("Tile is not empty.");
             return false;
@@ -131,7 +131,43 @@ public class MapController : MonoBehaviour
         RefreshTileTrench(x, y - 1);
         RefreshTileTrench(x, y + 1);
         
-        queue.Jobs.Add(new Job(location_array, JobTypes.Dig_Trench, 10));
+        queue.Jobs.Add(new Job(location_array, JobType.Dig_Trench, 10));
+        
+        // Debug.Log(queue.Jobs.Count);
+        
+        return true;
+    }
+
+    public bool PlaceWallTile(Vector2 location)
+    {
+        // Debug.Log("Placing tile at " + location);
+        int x = (int)location.x;
+        int y = (int)location.y;
+        
+        int[] location_array = new int[2] {x, y};
+        
+        // check if tile is empty
+        if (!TileHelper.IsEmpty(TileArray[x, y]))
+        {
+            Debug.Log("Tile is not empty.");
+            return false;
+        }
+        
+        if (x == 0 | x == MapX - 1 | y == 0 | y == MapY - 1)
+        {
+            Debug.Log("Can't place tile on border!");
+            return false;
+        }
+        
+        TileArray[x, y] = CheckNeighboursWall(x, y);
+        UpdateTileObject(x, y);
+        
+        RefreshTileWall(x - 1, y);
+        RefreshTileWall(x + 1, y);
+        RefreshTileWall(x, y - 1);
+        RefreshTileWall(x, y + 1);
+        
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, 10));
         
         // Debug.Log(queue.Jobs.Count);
         
@@ -201,7 +237,16 @@ public class MapController : MonoBehaviour
             UpdateTileObject(x, y);
         }
     }
-    
+
+    public void BuildWall(int x, int y)
+    {
+        if (TileArray[x, y] < Tile.Built_Wall_Empty)
+        {
+            TileArray[x, y] = (Tile)((int)TileArray[x, y] + (int)Tile.Built_Empty);
+            UpdateTileObject(x, y);
+        }
+    }
+
     public void MortarHit(int hit_x, int hit_y)
     {
         // destroy build trenches in 1-tile radius
@@ -211,7 +256,11 @@ public class MapController : MonoBehaviour
             {
                 try
                 {
-                    if (TileArray[x, y] >= Tile.Built_Empty)
+                    if (TileHelper.IsBuiltTrench(TileArray[x, y]))
+                    {
+                        TileArray[x, y] = Tile.Empty;
+                        UpdateTileObject(x, y);
+                    } else if (TileHelper.IsBuiltWall(TileArray[x, y]))
                     {
                         TileArray[x, y] = Tile.Empty;
                         UpdateTileObject(x, y);
@@ -230,6 +279,7 @@ public class MapController : MonoBehaviour
             for (int y = hit_y - 2; y <= hit_y + 2; y++)
             {
                 RefreshTileTrench(x, y);
+                RefreshTileWall(x, y);
             }
         }
         
@@ -287,6 +337,26 @@ public class MapController : MonoBehaviour
             }
         }
     }
+
+    private void RefreshTileWall(int x, int y)
+    {
+        if (TileHelper.IsWall(TileArray[x, y]))
+        {
+            Tile oldTile = TileArray[x, y];
+            {
+                TileArray[x, y] = CheckNeighboursWall(x, y);
+            }
+            
+            // if the old tile was a built one, this one needs to be too
+            if (oldTile > Tile.Built_Wall_Empty)
+                TileArray[x, y] = (Tile)((int)TileArray[x, y] + (int)Tile.Built_Empty);
+            
+            if (TileArray[x, y] != oldTile)
+            {
+                UpdateTileObject(x, y);
+            }
+        }
+    }
     
     private void UpdateTileObject(int x, int y)
     {
@@ -299,14 +369,22 @@ public class MapController : MonoBehaviour
         GameObjectArray[x, y] = newObject;
         
         GraphUpdateObject guo = new GraphUpdateObject(new Bounds(new Vector3(x, y), new Vector3(0.99f, 0.99f, 1)));
-        
-        // TODO: Make this support other types of buildings
-        if (TileArray[x, y] > Tile.Built_Empty)
+
+        guo.modifyWalkability = true;
+        guo.setWalkability = true;
+
+        if (TileHelper.IsBuiltTrench(TileArray[x, y]))
         {
             guo.addPenalty = 1;
+            guo.setWalkability = true;
+        } else if (TileHelper.IsBuiltWall(TileArray[x, y]))
+        {
+            ;
+            guo.setWalkability = false;
         } else
         {
             guo.addPenalty = 30000;
+            guo.setWalkability = true;
         }
         
         AstarPath.active.UpdateGraphs(guo);
@@ -394,6 +472,76 @@ public class MapController : MonoBehaviour
             return Tile.Horiz;
         }
     }
+
+    private Tile CheckNeighboursWall(int x, int y)
+    {
+        if (!TileHelper.IsWall(TileArray[x - 1, y]) & !TileHelper.IsWall(TileArray[x + 1, y])
+            & (TileHelper.IsWall(TileArray[x, y - 1]) | TileHelper.IsWall(TileArray[x, y + 1])))
+        {
+            return Tile.Wall_Vert;
+        }
+        // horiz
+        else if ((TileHelper.IsWall(TileArray[x - 1, y]) | TileHelper.IsWall(TileArray[x + 1, y])) 
+            & !TileHelper.IsWall(TileArray[x, y - 1]) & !TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_Horiz;
+        }
+        // T_Vert_L
+        else if (TileHelper.IsWall(TileArray[x - 1, y]) & !TileHelper.IsWall(TileArray[x + 1, y]) 
+            & TileHelper.IsWall(TileArray[x, y - 1]) & TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_T_Vert_L;
+        }
+        // T_Vert_R
+        else if (!TileHelper.IsWall(TileArray[x - 1, y]) & TileHelper.IsWall(TileArray[x + 1, y]) 
+            & TileHelper.IsWall(TileArray[x, y - 1]) & TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_T_Vert_R;
+        }
+        // T_Horiz_D
+        else if (TileHelper.IsWall(TileArray[x - 1, y]) & TileHelper.IsWall(TileArray[x + 1, y]) 
+            & TileHelper.IsWall(TileArray[x, y - 1]) & !TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_T_Horiz_D;
+        }
+        // T_Horiz_U
+        else if (TileHelper.IsWall(TileArray[x - 1, y]) & TileHelper.IsWall(TileArray[x + 1, y]) 
+            & !TileHelper.IsWall(TileArray[x, y - 1]) & TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_T_Horiz_U;
+        }
+        // X
+        else if (TileHelper.IsWall(TileArray[x - 1, y]) & TileHelper.IsWall(TileArray[x + 1, y]) 
+            & TileHelper.IsWall(TileArray[x, y - 1]) & TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_X;
+        } 
+        // L_L_U
+        else if (TileHelper.IsWall(TileArray[x - 1, y]) & TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_L_L_U;
+        }
+        // L_R_U
+        else if (TileHelper.IsWall(TileArray[x + 1, y]) & TileHelper.IsWall(TileArray[x, y + 1]))
+        {
+            return Tile.Wall_L_R_U;
+        }
+        // L_L_D
+        else if (TileHelper.IsWall(TileArray[x - 1, y]) & TileHelper.IsWall(TileArray[x, y - 1]))
+        {
+            return Tile.Wall_L_L_D;
+        }
+        // L_R_D
+        else if (TileHelper.IsWall(TileArray[x + 1, y]) & TileHelper.IsWall(TileArray[x, y - 1]))
+        {
+            return Tile.Wall_L_R_D;
+        }
+        // Point
+        else
+        {
+            return Tile.Wall_Point;
+        }
+    }
 }
 
 public class TileHelper : MonoBehaviour
@@ -402,7 +550,7 @@ public class TileHelper : MonoBehaviour
     {
         if (tile == null)
         {
-            throw new System.ArgumentException();
+            throw new System.ArgumentNullException();
         } else if (tile == Tile.Empty)
         {
             return false;
@@ -412,6 +560,71 @@ public class TileHelper : MonoBehaviour
         } else
         {
             return true;
+        }
+    }
+
+    public static bool IsBuiltTrench(Tile tile)
+    {
+        if (tile == null)
+        {
+            throw new System.ArgumentNullException();
+        } else if (tile < Tile.Built_Empty)
+        {
+            return false;
+        } else if (tile >= Tile.Wall_Empty)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
+    public static bool IsWall(Tile tile)
+    {
+        if (tile == null)
+        {
+            throw new System.ArgumentNullException();
+        } else if (tile < Tile.Wall_Empty)
+        {
+            return false;
+        } else if (tile > Tile.Built_Wall_L_R_D)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
+    public static bool IsBuiltWall(Tile tile)
+    {
+        if (tile == null)
+        {
+            throw new System.ArgumentNullException();
+        } else if (tile < Tile.Built_Wall_Empty)
+        {
+            return false;
+        } else if (tile > Tile.Built_Wall_L_R_D)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
+    public static bool IsEmpty(Tile tile)
+    {
+        if (tile == null)
+        {
+            throw new System.ArgumentNullException();
+        } else if (tile == Tile.Empty)
+        {
+            return true;
+        } else
+        {
+            return false;
         }
     }
 }

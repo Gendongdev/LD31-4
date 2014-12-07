@@ -4,6 +4,11 @@ Bugs:
 
 TODO:
 
+
+- make projectile hits work with walls
+- GUI for choosing item type
+- handle pathfinding failures
+
 - other player constructions, with resultant UI
 	- walls
 		- have a large number of hit points

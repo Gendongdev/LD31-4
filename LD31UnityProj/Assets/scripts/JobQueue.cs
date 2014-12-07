@@ -2,10 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public enum JobTypes
+public enum JobType
 {
     Empty,
     Dig_Trench,
+    Build_Wall,
     Max
 }
 
@@ -30,14 +31,14 @@ public class JobQueue : MonoBehaviour
 public class Job
 {
     public int[] Location = new int[2];
-    public JobTypes JobType = JobTypes.Empty;
+    public JobType Type = JobType.Empty;
     public int BuildTime;
     public int TimeLeft;
 
-    public Job(int[] location, JobTypes type, int buildtime)
+    public Job(int[] location, JobType type, int buildtime)
     {
         Location = location;
-        JobType = type;
+        Type = type;
         BuildTime = buildtime;
         TimeLeft = buildtime;
     }

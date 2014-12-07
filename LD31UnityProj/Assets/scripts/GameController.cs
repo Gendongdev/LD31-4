@@ -82,7 +82,7 @@ public class GameController : MonoBehaviour
         
         if (Input.GetMouseButton(0) & SelectionBox.activeSelf)
         {
-            mapController.PlaceTrenchTile(p);
+            mapController.PlaceWallTile(p);
         }
         
         if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
