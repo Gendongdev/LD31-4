@@ -50,7 +50,6 @@ public class BasicUnit : MonoBehaviour
     {
         if (HitPoints <= 0)
         {
-            HitPoints = 0;
             Die();
         }
         if (MoralePoints <= 0 & !isFleeing)
@@ -92,8 +91,16 @@ public class BasicUnit : MonoBehaviour
             inTrench = true;
         }
 
-        HitBar.sprite = HitPointSpriteArray[HitPoints];
-        MoraleBar.sprite = MoralePointSpriteArray[MoralePoints];
+        int hit_sprite_index = HitPoints;
+        int morale_sprite_index = MoralePoints;
+
+        if (hit_sprite_index < 0)
+            hit_sprite_index = 0;
+        if (morale_sprite_index < 0)
+            morale_sprite_index = 0;
+
+        HitBar.sprite = HitPointSpriteArray[hit_sprite_index];
+        MoraleBar.sprite = MoralePointSpriteArray[morale_sprite_index];
 
     }
 
@@ -166,11 +173,17 @@ public class BasicUnit : MonoBehaviour
             currentWayPoint++;
         }
         
-        Debug.DrawLine(current_pos, dest_pos);
+        // Debug.DrawLine(current_pos, dest_pos);
     }
 
     private void DoJob()
     {
+        if (MyJob == null)
+        {
+            Debug.Log("Got into DoJob without a job.");
+            return;
+        }
+
         Vector2 dest_pos = new Vector2(MyJob.Location[0], MyJob.Location[1]);
         Debug.DrawLine(dest_pos, new Vector3(dest_pos.x, dest_pos.y + MyJob.TimeLeft / 10f), Color.green);
 
@@ -182,7 +195,7 @@ public class BasicUnit : MonoBehaviour
             if (MyJob.TimeLeft == 0)
             {
                 mapController.BuildTrench(MyJob.Location[0], MyJob.Location[1]);
-                Debug.Log("Job's done!");
+                // Debug.Log("Job's done!");
                 MyJob = null;
             }
         }
@@ -190,7 +203,7 @@ public class BasicUnit : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log("I died!");
+        // Debug.Log("I died!");
 
         if (MyJob != null)
             queue.Jobs.Add(MyJob);

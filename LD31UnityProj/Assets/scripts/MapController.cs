@@ -79,7 +79,7 @@ public class MapController : MonoBehaviour
 
     public bool PlaceTile(Vector2 location)
     {
-        Debug.Log("Placing tile at " + location);
+        // Debug.Log("Placing tile at " + location);
         int x = (int)location.x;
         int y = (int)location.y;
 
@@ -108,7 +108,7 @@ public class MapController : MonoBehaviour
 
         queue.Jobs.Add(new Job(location_array, JobTypes.Dig_Trench, 10));
 
-        Debug.Log(queue.Jobs.Count);
+        // Debug.Log(queue.Jobs.Count);
 
         return true;
     }
@@ -184,10 +184,17 @@ public class MapController : MonoBehaviour
         {
             for (int y = hit_y - 1; y <= (hit_y + 1); y++)
             {
-                if (TileArray[x, y] >= Tiles.Built_Empty)
+                try
                 {
-                    TileArray[x, y] = Tiles.Empty;
-                    UpdateTileObject(x, y);
+                    if (TileArray[x, y] >= Tiles.Built_Empty)
+                    {
+                        TileArray[x, y] = Tiles.Empty;
+                        UpdateTileObject(x, y);
+                    }
+                } catch (System.Exception e)
+                {
+                    Debug.Log(TileArray + ", " + x + ", " + y);
+                    throw e;
                 }
             }
         }
@@ -203,14 +210,12 @@ public class MapController : MonoBehaviour
 
         // find any units in 2-tile radius and damage them
         Transform[] unit_list = gameController.UnitTransform.GetComponentsInChildren<Transform>();
-        Debug.Log("Units: " + (unit_list.Length - 1));
 
         foreach (Transform unit in unit_list)
         {
             if (gameController.UnitTransform.GetInstanceID() != unit.GetInstanceID())
             {
                 float distance_to_hit = Mathf.Abs(((Vector2)unit.position - new Vector2(hit_x, hit_y)).magnitude);
-                Debug.Log("Not parent " + distance_to_hit);
 
                 if (distance_to_hit <= 2)
                 {

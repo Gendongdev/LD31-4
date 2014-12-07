@@ -14,7 +14,7 @@ public class Mortar : MonoBehaviour
         mapController = GameObject.Find("map").GetComponent<MapController>();
         TargetYPos = Mathf.FloorToInt(Mathf.Sqrt
                                       (Random.Range(4.0f, Mathf.Pow(MapY - 2, 2))));
-        Debug.Log(TargetYPos);
+        // Debug.Log(TargetYPos);
 
     }
 
