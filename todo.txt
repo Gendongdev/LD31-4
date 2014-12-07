@@ -1,3 +1,6 @@
+Bugs:
+	- jobs getting count below zero somehow?
+		- for now, just slapped a if < 0 then = 0 on it as a failsafe
 
 TODO:
 

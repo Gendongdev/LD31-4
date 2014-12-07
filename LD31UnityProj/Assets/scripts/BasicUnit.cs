@@ -83,7 +83,7 @@ public class BasicUnit : MonoBehaviour
 
         Vector2 center_pos = (Vector2)transform.position + new Vector2(0.5f, 0.5f);
         if (mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)] 
-            <= Tiles.Built_Empty)
+            <= Tile.Built_Empty)
         {
             inTrench = false;
         } else
@@ -192,7 +192,7 @@ public class BasicUnit : MonoBehaviour
             nextCheckTime = Time.time + CheckTime;
             MyJob.TimeLeft -= 1;
 
-            if (MyJob.TimeLeft == 0)
+            if (MyJob.TimeLeft <= 0)
             {
                 mapController.BuildTrench(MyJob.Location[0], MyJob.Location[1]);
                 // Debug.Log("Job's done!");

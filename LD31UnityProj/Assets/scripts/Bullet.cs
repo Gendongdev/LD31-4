@@ -32,9 +32,9 @@ public class Bullet : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            Debug.Log("Hit a player! " + Time.time);
+            // Debug.Log("Hit a player! " + Time.time);
             BasicUnit unit_script = other.GetComponent<BasicUnit>();
-            Debug.Log("is in trench? " + unit_script.inTrench);
+            // Debug.Log("is in trench? " + unit_script.inTrench);
 
             float hit_chance = Random.Range(0.0f, 1.0f);
             float to_hit;
@@ -50,12 +50,12 @@ public class Bullet : MonoBehaviour
             if (hit_chance <= to_hit)
             {
                 unit_script.HitPoints -= 1;
-                Debug.Log("hp: " + unit_script.HitPoints);
+                // Debug.Log("hp: " + unit_script.HitPoints);
                 Destroy(gameObject);
             } else
             {
                 unit_script.MoralePoints -= 1;
-                Debug.Log("morale: " + unit_script.MoralePoints);
+                // Debug.Log("morale: " + unit_script.MoralePoints);
             }
 
         }

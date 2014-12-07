@@ -31,7 +31,7 @@ public class GameController : MonoBehaviour
         mapController = GameObject.Find("map").GetComponent<MapController>();
         mapController.MapX = MapX;
         mapController.MapY = MapY;
-        mapController.TileArray = new Tiles[MapX, MapY];
+        mapController.TileArray = new Tile[MapX, MapY];
         mapController.GameObjectArray = new GameObject[MapX, MapY];
         mapController.InitMap();
 
@@ -82,7 +82,7 @@ public class GameController : MonoBehaviour
         
         if (Input.GetMouseButton(0) & SelectionBox.activeSelf)
         {
-            mapController.PlaceTile(p);
+            mapController.PlaceTrenchTile(p);
         }
         
         if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
