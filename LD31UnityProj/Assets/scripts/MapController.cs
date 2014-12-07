@@ -43,10 +43,12 @@ public class MapController : MonoBehaviour
     public GameObject[] TileSprites = new GameObject[(int)Tiles.Max];
 
     private JobQueue queue;
+    private GameController gameController;
 
     // Use this for initialization
     void Start()
     {
+        gameController = GameObject.Find("game_controller").GetComponent<GameController>();
         queue = GameObject.Find("game_controller").GetComponent<JobQueue>();                
     }
     
@@ -104,7 +106,7 @@ public class MapController : MonoBehaviour
         RefreshTile(x, y - 1);
         RefreshTile(x, y + 1);
 
-        queue.Jobs.Add(new Job(location_array, JobTypes.Dig_Trench));
+        queue.Jobs.Add(new Job(location_array, JobTypes.Dig_Trench, 10));
 
         Debug.Log(queue.Jobs.Count);
 
@@ -173,6 +175,63 @@ public class MapController : MonoBehaviour
             TileArray[x, y] = (Tiles)((int)TileArray[x, y] + (int)Tiles.Built_Empty);
             UpdateTileObject(x, y);
         }
+    }
+
+    public void MortarHit(int hit_x, int hit_y)
+    {
+        // destroy build trenches in 1-tile radius
+        for (int x = hit_x - 1; x <= (hit_x + 1); x++)
+        {
+            for (int y = hit_y - 1; y <= (hit_y + 1); y++)
+            {
+                if (TileArray[x, y] >= Tiles.Built_Empty)
+                {
+                    TileArray[x, y] = Tiles.Empty;
+                    UpdateTileObject(x, y);
+                }
+            }
+        }
+
+        // update remaining tiles in 2-tile radius
+        for (int x = hit_x - 2; x <= hit_x + 2; x++)
+        {
+            for (int y = hit_y - 2; y <= hit_y + 2; y++)
+            {
+                RefreshTile(x, y);
+            }
+        }
+
+        // find any units in 2-tile radius and damage them
+        Transform[] unit_list = gameController.UnitTransform.GetComponentsInChildren<Transform>();
+        Debug.Log("Units: " + (unit_list.Length - 1));
+
+        foreach (Transform unit in unit_list)
+        {
+            if (gameController.UnitTransform.GetInstanceID() != unit.GetInstanceID())
+            {
+                float distance_to_hit = Mathf.Abs(((Vector2)unit.position - new Vector2(hit_x, hit_y)).magnitude);
+                Debug.Log("Not parent " + distance_to_hit);
+
+                if (distance_to_hit <= 2)
+                {
+                    BasicUnit unit_script = unit.GetComponent<BasicUnit>();
+                    if (unit_script != null)
+                    {
+                        unit_script.MoralePoints = 0;
+                        unit_script.HitPoints -= 5;
+                        if (unit_script.MyJob != null)
+                        {
+                            unit_script.MyJob.TimeLeft += 10;
+                            if (unit_script.MyJob.TimeLeft > unit_script.MyJob.BuildTime)
+                            {
+                                unit_script.MyJob.TimeLeft = unit_script.MyJob.BuildTime;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     private void RefreshTile(int x, int y)

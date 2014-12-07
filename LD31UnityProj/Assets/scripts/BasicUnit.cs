@@ -9,6 +9,12 @@ public class BasicUnit : MonoBehaviour
     const int MORALE_CHANCE = 2;
     const int MAX_HIT_POINTS = 10;
 
+    public Sprite[] HitPointSpriteArray;
+    public Sprite[] MoralePointSpriteArray;
+
+    public SpriteRenderer HitBar;
+    public SpriteRenderer MoraleBar;
+
     public int HitPoints = 10;
     public int MoralePoints = 10;
     public float CheckTime = 0.25f;
@@ -19,6 +25,8 @@ public class BasicUnit : MonoBehaviour
     public Path Path;
     public bool inTrench = true;
     public bool isFleeing = false;
+
+
 
     private JobQueue queue;
     private MapController mapController;
@@ -34,6 +42,7 @@ public class BasicUnit : MonoBehaviour
         mapController = GameObject.Find("map").GetComponent<MapController>();
         nextCheckTime = Time.time;
         seeker = GetComponent<Seeker>();
+
     }
     
     // Update is called once per frame
@@ -41,6 +50,7 @@ public class BasicUnit : MonoBehaviour
     {
         if (HitPoints <= 0)
         {
+            HitPoints = 0;
             Die();
         }
         if (MoralePoints <= 0 & !isFleeing)
@@ -81,6 +91,9 @@ public class BasicUnit : MonoBehaviour
         {
             inTrench = true;
         }
+
+        HitBar.sprite = HitPointSpriteArray[HitPoints];
+        MoraleBar.sprite = MoralePointSpriteArray[MoralePoints];
 
     }
 

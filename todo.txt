@@ -1,3 +1,57 @@
+
+TODO:
+
+- other player constructions, with resultant UI
+	- walls
+		- have a large number of hit points
+		- stop machine gun fire - from both directions!
+		- can't be crossed by troops
+	- machine gun - supress enemy fire
+		- no mortars from a column where a machine gun has shot a bullet in last N seconds
+	- mortar
+		- if it collides with an enemy mortar, both destroyed in mid air (no damage?)
+		- each mortar over the top shortens current enemy fire period or adds delay
+	- sentry
+		- troop stays where it is for N ticks
+	- medic:
+		- heal HP (and morale???) of each unit in a certain radius
+
+- gun, mortar, medic will all be constant jobs, for as long as the building stands
+
+- more sophisticated enemy fire:
+	- waves of machine gun fire and mortar fire
+		- some randomness
+
+- win condition
+	- over the top
+		- some number of soldiers have to make it over within a period of time
+
+- lose condition
+	- all soldiers dead or fleeing?
+
+- current white box in the UI will have the following information:
+	- number of active troops
+	- number of fleeing troops
+	- number of troops over the top
+	- active # of jobs???	
+	
+- real art
+- music
+- sound
+- animations
+
+- particle effects - yea/nay
+
+
+
+
+
+
+
+
+
+
+
 - UI:
 	- main game screen
 	- right side: 
@@ -35,20 +89,3 @@ troops:
 		- take closes?
 	- pathfinding: can pathfind outside of trenches, but more vulnerable - prefer in trenches as much as possible
 
-
-TODO:
-
-- pathfinding for troops - stay in trenches as much as possible
-	- graph update: take into account penalty
-		- trench 0
-		- others 1000
-		- buildings - unwalkable - eventually
-
-- mortars - destroy structures, lots of damage to soliders
-- do more with morale:
-	- if drops to zero, flee to random point off the map - can still fall while fleeing
-	- once off map, regain points then come back
-
-- win condition
-- lose condition
-	- all soldiers dead or fleeing?
