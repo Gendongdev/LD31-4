@@ -42,6 +42,7 @@ public class GameController : MonoBehaviour
     public Sprite ThreeTileSelectionBox;
     public float ScoreReduceTime = 5f;
     public int VictoryScore;
+    public bool IsRunning = true;
 
     private MapController mapController;
     private float nextReinforcement;
@@ -56,7 +57,7 @@ public class GameController : MonoBehaviour
     private int score;
     private float nextScoreReduction;
 
-    private bool isRunning = true;
+
 
     private bool hasWon = false;
     private bool hasLost = false;
@@ -96,7 +97,7 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isRunning)
+        if (IsRunning)
         {
             ProcessMouse();
 
@@ -125,7 +126,7 @@ public class GameController : MonoBehaviour
                 hasLost = CheckLose();
             } else
             {
-                isRunning = false;
+                IsRunning = false;
             }
         }
                
@@ -378,7 +379,7 @@ public class GameController : MonoBehaviour
 
     public bool CheckWin()
     {
-        if (score > VictoryScore)
+        if (score >= VictoryScore)
         {
             Debug.Log("You win!!!");
             return true;

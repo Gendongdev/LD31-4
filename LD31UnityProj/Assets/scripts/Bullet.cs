@@ -18,20 +18,23 @@ public class Bullet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 current_pos = transform.position;
-        Vector3 new_pos = new Vector3(current_pos.x, current_pos.y + BulletVelocity * Time.deltaTime, current_pos.z);
-        transform.position = new_pos;
-
-        if (transform.position.y < -0.5)
+        if (gameController.IsRunning)
         {
-            Destroy(gameObject);
-        }
+            Vector3 current_pos = transform.position;
+            Vector3 new_pos = new Vector3(current_pos.x, current_pos.y + BulletVelocity * Time.deltaTime, current_pos.z);
+            transform.position = new_pos;
 
-        if (transform.position.y > gameController.MapY + 0.5)
-        {
-            Debug.Log("Suppressing fire in column " + current_pos.x);
-            gameController.SuppressFire((int)current_pos.x);
-            Destroy(gameObject);
+            if (transform.position.y < -0.5)
+            {
+                Destroy(gameObject);
+            }
+
+            if (transform.position.y > gameController.MapY + 0.5)
+            {
+                Debug.Log("Suppressing fire in column " + current_pos.x);
+                gameController.SuppressFire((int)current_pos.x);
+                Destroy(gameObject);
+            }
         }
     }
 

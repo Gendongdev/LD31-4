@@ -6,9 +6,7 @@ Bugs:
 	- bug: sometimes two units ending up at same job?
 TODO:
 
-
-- GUI for choosing item type
-	- needs to be extended for other build types
+- control flow for game start, win and lose states
 
 - handle pathfinding failures - done?
 
@@ -21,13 +19,6 @@ TODO:
 	- jobs go to closest free worker - not whatever worker's first takes closest free job
 		(only relevant if more than one free worker, of course)
 	- probably not going to do this
-
-- win condition
-	- over the top
-		- some number of soldiers have to make it over within a period of time
-
-- lose condition
-	- all soldiers dead or fleeing?
 
 - current white box in the UI will have the following information:
 	- number of active troops
@@ -47,6 +38,7 @@ TODO:
 
 
 DONE:
+
 - other player constructions, with resultant UI - DONE!!!!
 	- walls
 		- have a large number of hit points - DONE
@@ -63,6 +55,22 @@ DONE:
 		- heal HP (and morale???) of each unit in a certain radius - DONE
 
 - gun, mortar, medic will all be constant jobs, for as long as the building stands - DONE
+
+- win condition - DONE
+	- over the top
+		- some number of soldiers have to make it over within a period of time
+
+- lose condition - DONE
+	- all soldiers dead or fleeing?
+
+- GUI for choosing item type - DONE
+	- needs to be extended for other build types
+
+
+
+
+
+
 
 
 - UI:

@@ -52,63 +52,65 @@ public class BasicUnit : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (HitPoints <= 0)
+        if (gameController.IsRunning)
         {
-            Die();
-        }
-        if (MoralePoints <= 0 & !isFleeing)
-        {
-            MoralePoints = 0;
-            isFleeing = true;
-            destination = new Vector2(Random.Range(0, mapController.MapX), 0);
-            seeker.StartPath(transform.position, destination, OnPathComplete);
-            nextMoraleTime = Time.time + MoraleRecoverTime;
-
-            // return job to queue.
-            if (MyJob != null)
+            if (HitPoints <= 0)
             {
-                queue.Jobs.Add(MyJob);
-                MyJob = null;
+                Die();
             }
-        }
-
-        if (!isFleeing)
-        {
-            if (MyJob == null)
+            if (MoralePoints <= 0 & !isFleeing)
             {
-                GetJob();
+                MoralePoints = 0;
+                isFleeing = true;
+                destination = new Vector2(Random.Range(0, mapController.MapX), 0);
+                seeker.StartPath(transform.position, destination, OnPathComplete);
+                nextMoraleTime = Time.time + MoraleRecoverTime;
+
+                // return job to queue.
+                if (MyJob != null)
+                {
+                    queue.Jobs.Add(MyJob);
+                    MyJob = null;
+                }
+            }
+
+            if (!isFleeing)
+            {
+                if (MyJob == null)
+                {
+                    GetJob();
+                } else
+                {
+                    Move();
+                    DoJob();
+                }
             } else
             {
-                Move();
-                DoJob();
+                Flee();
             }
-        } else
-        {
-            Flee();
-        }
 
-        Vector2 center_pos = (Vector2)transform.position + new Vector2(0.5f, 0.5f);
-        inTrench = false;
+            Vector2 center_pos = (Vector2)transform.position + new Vector2(0.5f, 0.5f);
+            inTrench = false;
 
-        if (center_pos.y < gameController.MapY)
-        {
-            if (TileHelper.IsBuiltTrench(mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)]))
+            if (center_pos.y < gameController.MapY)
             {
-                inTrench = true;
-            } 
+                if (TileHelper.IsBuiltTrench(mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)]))
+                {
+                    inTrench = true;
+                } 
+            }
+
+            int hit_sprite_index = HitPoints;
+            int morale_sprite_index = MoralePoints;
+
+            if (hit_sprite_index < 0)
+                hit_sprite_index = 0;
+            if (morale_sprite_index < 0)
+                morale_sprite_index = 0;
+
+            HitBar.sprite = HitPointSpriteArray[hit_sprite_index];
+            MoraleBar.sprite = MoralePointSpriteArray[morale_sprite_index];
         }
-
-        int hit_sprite_index = HitPoints;
-        int morale_sprite_index = MoralePoints;
-
-        if (hit_sprite_index < 0)
-            hit_sprite_index = 0;
-        if (morale_sprite_index < 0)
-            morale_sprite_index = 0;
-
-        HitBar.sprite = HitPointSpriteArray[hit_sprite_index];
-        MoraleBar.sprite = MoralePointSpriteArray[morale_sprite_index];
-
     }
 
     private void GetJob()

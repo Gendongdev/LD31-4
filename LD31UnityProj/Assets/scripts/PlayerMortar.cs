@@ -17,15 +17,18 @@ public class PlayerMortar : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 current_pos = transform.position;
-        Vector3 new_pos = new Vector3(current_pos.x, current_pos.y + MortarVelocity * Time.deltaTime, current_pos.z);
-        transform.position = new_pos;
-
-        if (new_pos.y >= HitY)
+        if (gameController.IsRunning)
         {
-            Debug.Log("Hit enemy line!");
-            gameController.PlayerMortarHit();
-            Destroy(gameObject);
+            Vector3 current_pos = transform.position;
+            Vector3 new_pos = new Vector3(current_pos.x, current_pos.y + MortarVelocity * Time.deltaTime, current_pos.z);
+            transform.position = new_pos;
+
+            if (new_pos.y >= HitY)
+            {
+                Debug.Log("Hit enemy line!");
+                gameController.PlayerMortarHit();
+                Destroy(gameObject);
+            }
         }
     }
 
