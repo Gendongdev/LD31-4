@@ -37,12 +37,15 @@ public class JobQueue : MonoBehaviour
 
     public List<Job> Jobs = new List<Job>();
 
-//    // Use this for initialization
-//    void Start()
-//    {
-//	
-//    }
-//	
+    private MapController mapController;
+
+    // Use this for initialization
+    void Start()
+    {
+        mapController = GameObject.Find("map").GetComponent<MapController>();
+
+    }
+	
     // Update is called once per frame
     void Update()
     {
@@ -53,6 +56,28 @@ public class JobQueue : MonoBehaviour
             {
                 Debug.Log("Removing expired sentry job from queue.");
                 jobs_to_remove.Add(this_job);
+            }
+
+            if (this_job.Type == JobType.Fire_Mortar | this_job.Type == JobType.Do_Medic)
+            {
+                bool stillExists = false;
+                
+                foreach (Transform building in mapController.BuildingsTransform)
+                {
+                    if (building.GetInstanceID() != mapController.BuildingsTransform.GetInstanceID()
+                        & building.tag == "Building")
+                    if ((Vector2)building.position == new Vector2(this_job.Location[0], this_job.Location[1]))
+                    {
+                        stillExists = true;
+                    }
+                }
+                
+                if (!stillExists)
+                {
+                    Debug.Log("Removing job for destroyed building from queue.");
+                    jobs_to_remove.Add(this_job);
+                    return;
+                }
             }
         }
 

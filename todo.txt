@@ -2,13 +2,15 @@ Bugs:
 	- jobs getting count below zero somehow?
 		- for now, just slapped a if < 0 then = 0 on it as a failsafe
 
+	- bug: some jobs for destroyed buildings sticking around
+	- bug: sometimes two units ending up at same job?
 TODO:
 
 
 - GUI for choosing item type
 	- needs to be extended for other build types
 
-- handle pathfinding failures
+- handle pathfinding failures - done?
 
 - other player constructions, with resultant UI
 	- walls
@@ -18,14 +20,14 @@ TODO:
 	- machine gun - supress enemy fire
 		- no mortars from a column where a machine gun has shot a bullet in last N seconds
 	- mortar
-		- if it collides with an enemy mortar, both destroyed in mid air (no damage?)
-		- each mortar over the top shortens current enemy fire period or adds delay
+		- if it collides with an enemy mortar, both destroyed in mid air (no damage?) - DONE
+		- each mortar over the top shortens current enemy fire period or adds delay to next - DONE
 	- sentry
-		- troop stays where it is for N ticks
+		- troop stays where it is for N ticks - DONE
 	- medic:
-		- heal HP (and morale???) of each unit in a certain radius
+		- heal HP (and morale???) of each unit in a certain radius - DONE
 
-- gun, mortar, medic will all be constant jobs, for as long as the building stands
+- gun, mortar, medic will all be constant jobs, for as long as the building stands - DONE
 
 - more sophisticated enemy fire:
 	- waves of machine gun fire and mortar fire - basics implemented
@@ -35,6 +37,7 @@ TODO:
 - reverse how job taking works:
 	- jobs go to closest free worker - not whatever worker's first takes closest free job
 		(only relevant if more than one free worker, of course)
+	- probably not going to do this
 
 - win condition
 	- over the top
