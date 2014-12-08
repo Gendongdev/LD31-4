@@ -12,7 +12,7 @@ TODO:
 
 - other player constructions, with resultant UI
 	- walls
-		- have a large number of hit points
+		- have a large number of hit points - DONE
 		- stop machine gun fire - from both directions!
 		- can't be crossed by troops - DONE
 	- machine gun - supress enemy fire

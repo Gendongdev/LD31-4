@@ -26,17 +26,33 @@ public class GameController : MonoBehaviour
     public Transform UnitTransform;
     public Transform ProjectileTransform;
     public float ReinforcementsTime = 20f;
-    public float EnemyMachineGunRate = 0.2f;
-    public int FirstEnemyMachineGunTime = 5;
+    public float EnemyGunRate = 0.2f;
     public float EnemyMortarRate = 0.5f;
+
+    public int FirstEnemyGunTime = 1;
     public int FirstEnemyMortarTime = 1;
+
+    public float TimeBetweenEnemyMortarWave = 6;
+    public float TimeBetweenEnemyGunWave = 5;
+
+    public float DurationEnemyMortarWave = 6;
+    public float DurationEnemyGunWave = 5;
+
     public ControlMode Mode = ControlMode.Dig;
     public Transform[] Buttons;
 
+    public UnityEngine.UI.Text StatusText;
+
     private MapController mapController;
     private float nextReinforcement;
-    private float nextEnemyBullet;
+    private float nextEnemyGun;
     private float nextEnemyMortar;
+
+    private float nextEnemyGunStateChange;
+    private float nextEnemyMortarStateChange;
+
+    private bool enemyMortarFire;
+    private bool enemyGunFire;
 
     // Use this for initialization
     void Start()
@@ -53,8 +69,11 @@ public class GameController : MonoBehaviour
         AddSoldier();
 
         nextReinforcement = Time.time + ReinforcementsTime;
-        nextEnemyBullet = Time.time + FirstEnemyMachineGunTime;
-        nextEnemyMortar = Time.time + FirstEnemyMortarTime;
+        enemyMortarFire = false;
+        enemyGunFire = false;
+
+        nextEnemyGunStateChange = FirstEnemyGunTime;
+        nextEnemyMortarStateChange = FirstEnemyMortarTime;
     }
     
     // Update is called once per frame
@@ -68,13 +87,63 @@ public class GameController : MonoBehaviour
             nextReinforcement = Time.time + ReinforcementsTime;
         }
 
-        if (Time.time >= nextEnemyBullet)
+        EnemyStateChanges();
+        EnemyFire();
+
+    }
+
+    void EnemyStateChanges()
+    {
+        if (Time.time > nextEnemyGunStateChange)
         {
-            AddEnemyBullet();
-            nextEnemyBullet = Time.time + EnemyMachineGunRate;
+            if (enemyGunFire)
+            {
+                nextEnemyGunStateChange = Time.time + TimeBetweenEnemyGunWave;
+                enemyGunFire = false;
+            } else
+            {
+                nextEnemyGunStateChange = Time.time + DurationEnemyGunWave;
+                enemyGunFire = true;
+                nextEnemyGun = Time.time + EnemyGunRate;
+            }
+        }
+        if (Time.time > nextEnemyMortarStateChange)
+        {
+            if (enemyMortarFire)
+            {
+                nextEnemyMortarStateChange = Time.time + TimeBetweenEnemyMortarWave;
+                enemyMortarFire = false;
+            } else
+            {
+                nextEnemyMortarStateChange = Time.time + DurationEnemyMortarWave;
+                enemyMortarFire = true;
+                nextEnemyMortar = Time.time + EnemyMortarRate;
+            }
         }
 
-        if (Time.time >= nextEnemyMortar)
+        if (enemyGunFire & enemyMortarFire)
+        {
+            StatusText.text = "Under heavy fire!";
+        } else if (enemyGunFire)
+        {
+            StatusText.text = "Incoming machine gun fire.";
+        } else if (enemyMortarFire)
+        {
+            StatusText.text = "Incoming mortar shells.";
+        } else
+        {
+            StatusText.text = "All clear!";
+        }
+    }
+
+    void EnemyFire()
+    {
+        if (enemyGunFire & Time.time > nextEnemyGun)
+        {
+            AddEnemyBullet();
+            nextEnemyGun = Time.time + EnemyGunRate;
+        }
+        if (enemyMortarFire & Time.time > nextEnemyMortar)
         {
             AddEnemyMortar();
             nextEnemyMortar = Time.time + EnemyMortarRate;
