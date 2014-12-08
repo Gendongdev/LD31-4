@@ -154,7 +154,7 @@ public class GameController : MonoBehaviour
         // control valid positions of selection box based on job mode
         if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall) 
             & (p.x < 1 | p.x >= MapX - 1 | p.y < 1 | p.y >= MapY - 1))
-            | ((Mode == ControlMode.Mortar) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2))
+            | ((Mode == ControlMode.Mortar | Mode == ControlMode.Medic) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2))
             | ((Mode == ControlMode.Sentry) & (p.x < 0 | p.x >= MapX | p.y < 0 | p.y >= MapY)))
         {
             SelectionBox.SetActive(false);
@@ -177,6 +177,9 @@ public class GameController : MonoBehaviour
                     break;
                 case ControlMode.Mortar:
                     mapController.PlaceMortar(p);
+                    break;
+                case ControlMode.Medic:
+                    mapController.PlaceMedic(p);
                     break;
             }
         }
@@ -237,25 +240,28 @@ public class GameController : MonoBehaviour
             case ControlMode.Sentry:
                 SelectionBox.GetComponent<SpriteRenderer>().sprite = OneTileSelectionBox;
                 break;
+            case ControlMode.Medic:
+                SelectionBox.GetComponent<SpriteRenderer>().sprite = ThreeTileSelectionBox;
+                break;
         }
     }
-
+    
     public void PlayerMortarHit()
     {
         if (enemyMortarFire)
         {
-            nextEnemyMortarStateChange -= 1;
+            nextEnemyMortarStateChange -= 0.5f;
         } else
         {
-            nextEnemyMortarStateChange += 1;
+            nextEnemyMortarStateChange += 0.5f;
         }
 
         if (enemyGunFire)
         {
-            nextEnemyGunStateChange -= 1;
+            nextEnemyGunStateChange -= 0.5f;
         } else
         {
-            nextEnemyGunStateChange += 1;
+            nextEnemyGunStateChange += 0.5f;
         }
     }
 }

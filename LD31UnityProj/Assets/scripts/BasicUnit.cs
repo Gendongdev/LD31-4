@@ -220,7 +220,7 @@ public class BasicUnit : MonoBehaviour
 
             // for jobs in buildings, check that the building still exists
 
-            if (MyJob.Type == JobType.Fire_Mortar)
+            if (MyJob.Type == JobType.Fire_Mortar | MyJob.Type == JobType.Do_Medic)
             {
                 bool stillExists = false;
 
@@ -269,6 +269,17 @@ public class BasicUnit : MonoBehaviour
                         break;
 
                     case JobType.Sentry:
+                        MyJob = null;
+                        break;
+
+                    case JobType.Build_Medic:
+                        mapController.BuildMedic(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
+
+                    case JobType.Do_Medic:
+                        queue.Jobs.Add(new Job(MyJob.Location, JobType.Do_Medic, JobTime.DO_MEDIC));
+                        mapController.DoMedic(MyJob.Location[0], MyJob.Location[1]);
                         MyJob = null;
                         break;
                 }

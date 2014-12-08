@@ -12,6 +12,8 @@ public enum JobType
     Sentry,
     Build_Gun,
     Fire_Gun,
+    Build_Medic,
+    Do_Medic,
     Max
 }
 
@@ -19,11 +21,13 @@ public static class JobTime
 {
     public const int DIG_TRENCH = 10;
     public const int BUILD_WALL = 15;
-    public const int BUILD_MORTAR = 30;
-    public const int FIRE_MORTAR = 15;
+    public const int BUILD_MORTAR = 35;
+    public const int FIRE_MORTAR = 20;
     public const int SENTRY = 10;
     public const int BUILD_GUN = 25;
     public const int FIRE_GUN = 5;
+    public const int BUILD_MEDIC = 25;
+    public const int DO_MEDIC = 15;
 
     public const float SENTRY_EXPIRE_TIME = 0.5f;
 }

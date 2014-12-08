@@ -76,6 +76,26 @@ public enum Tile
     Built_Mortar_RU,
     Built_Mortar_RM,
     Built_Mortar_RD,
+    Medic_Empty,
+    Medic_LU,
+    Medic_LM,
+    Medic_LD,
+    Medic_MU,
+    Medic_MM,
+    Medic_MD,
+    Medic_RU,
+    Medic_RM,
+    Medic_RD,
+    Built_Medic_Empty,
+    Built_Medic_LU,
+    Built_Medic_LM,
+    Built_Medic_LD,
+    Built_Medic_MU,
+    Built_Medic_MM,
+    Built_Medic_MD,
+    Built_Medic_RU,
+    Built_Medic_RM,
+    Built_Medic_RD,
     Max
 }
 
@@ -83,6 +103,8 @@ public enum BuildingType
 {
     Mortar,
     Built_Mortar,
+    Medic,
+    Built_Medic,
     Max
 }
 
@@ -232,6 +254,55 @@ public class MapController : MonoBehaviour
         return true;
     }
 
+    public bool PlaceMedic(Vector2 location)
+    {
+        int x = (int)location.x;
+        int y = (int)location.y;
+        
+        int[] location_array = new int[2] {x, y};
+        
+        if (!TileHelper.IsEmpty(TileArray[x, y - 2]) & !TileHelper.IsTrench(TileArray[x, y - 2]))
+            return false;
+        
+        for (int x_iter = x-1; x_iter <= x+1; x_iter++)
+        {
+            for (int y_iter = y-1; y_iter <= y+1; y_iter++)
+            {
+                if (!TileHelper.IsEmpty(TileArray[x_iter, y_iter]))
+                {
+                    return false;
+                }
+            }
+        }
+        
+        TileArray[x - 1, y - 1] = Tile.Medic_LD;
+        TileArray[x - 1, y] = Tile.Medic_LM;
+        TileArray[x - 1, y + 1] = Tile.Medic_LU;
+        TileArray[x, y - 1] = Tile.Medic_MD;
+        TileArray[x, y] = Tile.Medic_MM;
+        TileArray[x, y + 1] = Tile.Medic_MU;
+        TileArray[x + 1, y - 1] = Tile.Medic_RD;
+        TileArray[x + 1, y] = Tile.Medic_RM;
+        TileArray[x + 1, y + 1] = Tile.Medic_RU;
+        
+        for (int x_iter = x-1; x_iter == x+1; x_iter++)
+        {
+            for (int y_iter = y-1; y_iter == y+1; y_iter++)
+            {
+                UpdateTileObject(x, y);
+            }
+        }
+        
+        RefreshTileTrench(x, y - 2);
+        
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Medic, JobTime.BUILD_MEDIC));
+        
+        GameObject new_medic = (GameObject)Instantiate(Buildings[(int)BuildingType.Medic], new Vector3(x, y, 1f), Quaternion.identity);
+        Transform new_transform = new_medic.GetComponent<Transform>();
+        new_transform.parent = BuildingsTransform;
+        return true;
+    }
+
     public bool PlaceWallTile(Vector2 location)
     {
         // Debug.Log("Placing tile at " + location);
@@ -375,6 +446,39 @@ public class MapController : MonoBehaviour
         Debug.Log(queue.Jobs.Count);
     }
 
+    public void BuildMedic(int x, int y)
+    {
+        for (int x_iter = x-1; x_iter <= x+1; x_iter++)
+        {
+            for (int y_iter = y-1; y_iter <= y+1; y_iter++)
+            {
+                if (!TileHelper.IsEmpty(TileArray[x_iter, y_iter]))
+                {
+                    if (TileHelper.IsMedic(TileArray[x_iter, y_iter]) 
+                        & !TileHelper.IsBuiltMedic(TileArray[x_iter, y_iter]))
+                    {
+                        TileArray[x_iter, y_iter] = (Tile)((int)TileArray[x_iter, y_iter] + 10); // magic number. bad boy!
+                        UpdateTileObject(x_iter, y_iter);
+                    }
+                }
+            }
+        }
+        
+        foreach (Transform building in BuildingsTransform.GetComponentsInChildren<Transform>())
+        {
+            if (building.position.x == x & building.position.y == y)
+            {
+                Destroy(building.gameObject);
+            }
+        }
+        
+        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Medic], new Vector3(x, y, 2f), Quaternion.identity);
+        Transform new_transform = new_mortar.GetComponent<Transform>();
+        new_transform.parent = BuildingsTransform;
+        
+        queue.Jobs.Add(new Job(new int[] {x,y}, JobType.Do_Medic, JobTime.DO_MEDIC));
+        Debug.Log(queue.Jobs.Count);
+    }
 
     public void FireMortar(int x, int y)
     {
@@ -383,10 +487,50 @@ public class MapController : MonoBehaviour
         new_player_mortar.GetComponent<Transform>().SetParent(gameController.ProjectileTransform);
     }
 
+    public void DoMedic(int x, int y)
+    {
+        Transform[] unit_list = gameController.UnitTransform.GetComponentsInChildren<Transform>();
+
+        int heal_count = 0;
+        foreach (Transform unit in unit_list)
+        {
+            if (gameController.UnitTransform.GetInstanceID() != unit.GetInstanceID())
+            {
+                float distance_to_medic = Mathf.Abs(((Vector2)unit.position - new Vector2(x, y)).magnitude);
+                
+                if (distance_to_medic <= 8 & distance_to_medic > 0)
+                {
+                    BasicUnit unit_script = unit.GetComponent<BasicUnit>();
+
+                    bool to_heal = false;
+                    // heal units that aren't doing medic jobs
+                    if (unit_script != null)
+                    {
+                        if (unit_script.MyJob == null)
+                        {
+                            to_heal = true;
+                        } else if (unit_script.MyJob.Type != JobType.Do_Medic)
+                        {
+                            to_heal = true;
+                        }
+
+                        if (to_heal)
+                        {
+                            heal_count++;
+                            if (unit_script.HitPoints < 10)
+                                unit_script.HitPoints += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        Debug.Log("Healed " + heal_count + " units.");
+    }
+
     public void MortarHit(int hit_x, int hit_y)
     {
         Transform[] building_list = BuildingsTransform.GetComponentsInChildren<Transform>();
-
 
         // destroy trenches and walls in 1-tile radius
         for (int x = hit_x - 1; x <= (hit_x + 1); x++)
@@ -417,6 +561,21 @@ public class MapController : MonoBehaviour
                             }
                         }
 
+                    } else if (TileHelper.IsBuiltMedic(TileArray[x, y]))
+                    {
+                        int[] offset = TileHelper.GetOffsetOfBuilding(TileArray[x, y]);
+                        int medic_x = x + offset[0];
+                        int medic_y = y + offset[1];
+                    
+                    
+                        foreach (Transform building in building_list)
+                        {
+                            if ((Vector2)building.position == new Vector2(medic_x, medic_y))
+                            {
+                                building.GetComponent<Building>().HitPoints -= 1;
+                            }
+                        }
+                    
                     }
                 } catch (System.Exception e)
                 {
@@ -848,15 +1007,45 @@ public class TileHelper : MonoBehaviour
         }
     }
 
+    public static bool IsMedic(Tile tile)
+    {
+        if (tile < Tile.Medic_LU)
+        {
+            return false;
+        } else if (tile > Tile.Built_Medic_RD)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
+    public static bool IsBuiltMedic(Tile tile)
+    {
+        if (tile < Tile.Built_Medic_LU)
+        {
+            return false;
+        } else if (tile > Tile.Built_Medic_RD)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+    
     public static bool IsUnpassableBuilding(Tile tile)
     {
         if (tile < Tile.Mortar_Empty)
         {
             return false;
-        } else if (Tile.Built_Mortar_LU <= tile & tile <= Tile.Built_Mortar_MU)
+        } else if ((Tile.Built_Mortar_LU <= tile & tile <= Tile.Built_Mortar_MU) 
+            | (Tile.Built_Medic_LU <= tile & tile <= Tile.Built_Medic_MU))
         {
             return true;
-        } else if (Tile.Built_Mortar_RU <= tile & tile <= Tile.Built_Mortar_RD)
+        } else if ((Tile.Built_Mortar_RU <= tile & tile <= Tile.Built_Mortar_RD)
+            | (Tile.Built_Medic_RU <= tile & tile <= Tile.Built_Medic_RD))
         {
             return true;
         } else
@@ -870,7 +1059,8 @@ public class TileHelper : MonoBehaviour
         if (tile < Tile.Mortar_Empty)
         {
             return false;
-        } else if (Tile.Mortar_MM <= tile & tile <= Tile.Mortar_MD)
+        } else if ((Tile.Mortar_MM <= tile & tile <= Tile.Mortar_MD)
+            | (Tile.Medic_MM <= tile & tile <= Tile.Medic_MD))
         {
             return true;
         } else
@@ -883,7 +1073,8 @@ public class TileHelper : MonoBehaviour
         if (tile < Tile.Mortar_Empty)
         {
             return false;
-        } else if (Tile.Built_Mortar_MM <= tile & tile <= Tile.Built_Mortar_MD)
+        } else if ((Tile.Built_Mortar_MM <= tile & tile <= Tile.Built_Mortar_MD)
+            | (Tile.Built_Medic_MM <= tile & tile <= Tile.Built_Medic_MD))
         {
             return true;
         } else
@@ -933,8 +1124,36 @@ public class TileHelper : MonoBehaviour
             case Tile.Built_Mortar_RD:
                 offset = new int[] {-1,1};
                 break;
-        }
 
+            case Tile.Built_Medic_LU:
+                offset = new int[] {1,-1};
+                break;
+            case Tile.Built_Medic_LM:
+                offset = new int[] {1,0};
+                break;
+            case Tile.Built_Medic_LD:
+                offset = new int[] {1,1};
+                break;
+            case Tile.Built_Medic_MU:
+                offset = new int[] {0,-1};
+                break;
+            case Tile.Built_Medic_MM:
+                offset = new int[] {0,0};
+                break;
+            case Tile.Built_Medic_MD:
+                offset = new int[] {0,1};
+                break;
+            case Tile.Built_Medic_RU:
+                offset = new int[] {-1,-1};
+                break;
+            case Tile.Built_Medic_RM:
+                offset = new int[] {-1,0};
+                break;
+            case Tile.Built_Medic_RD:
+                offset = new int[] {-1,1};
+                break;
+        }
+        
         return offset;
     }
 }
