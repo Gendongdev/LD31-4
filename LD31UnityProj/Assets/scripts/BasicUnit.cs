@@ -220,7 +220,7 @@ public class BasicUnit : MonoBehaviour
 
             // for jobs in buildings, check that the building still exists
 
-            if (MyJob.Type == JobType.Fire_Mortar | MyJob.Type == JobType.Do_Medic)
+            if (MyJob.Type == JobType.Fire_Mortar | MyJob.Type == JobType.Do_Medic | MyJob.Type == JobType.Fire_Gun)
             {
                 bool stillExists = false;
 
@@ -280,6 +280,17 @@ public class BasicUnit : MonoBehaviour
                     case JobType.Do_Medic:
                         queue.Jobs.Add(new Job(MyJob.Location, JobType.Do_Medic, JobTime.DO_MEDIC));
                         mapController.DoMedic(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
+
+                    case JobType.Build_Gun:
+                        mapController.BuildGun(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
+
+                    case JobType.Fire_Gun:
+                        queue.Jobs.Add(new Job(MyJob.Location, JobType.Fire_Gun, JobTime.FIRE_GUN));
+                        mapController.FireGun(MyJob.Location[0], MyJob.Location[1]);
                         MyJob = null;
                         break;
                 }

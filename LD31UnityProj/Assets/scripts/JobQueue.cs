@@ -24,8 +24,8 @@ public static class JobTime
     public const int BUILD_MORTAR = 35;
     public const int FIRE_MORTAR = 20;
     public const int SENTRY = 10;
-    public const int BUILD_GUN = 25;
-    public const int FIRE_GUN = 5;
+    public const int BUILD_GUN = 15;
+    public const int FIRE_GUN = 2;
     public const int BUILD_MEDIC = 25;
     public const int DO_MEDIC = 15;
 
@@ -58,7 +58,8 @@ public class JobQueue : MonoBehaviour
                 jobs_to_remove.Add(this_job);
             }
 
-            if (this_job.Type == JobType.Fire_Mortar | this_job.Type == JobType.Do_Medic)
+            if (this_job.Type == JobType.Fire_Mortar | this_job.Type == JobType.Do_Medic 
+                | this_job.Type == JobType.Fire_Gun)
             {
                 bool stillExists = false;
                 

@@ -154,7 +154,7 @@ public class GameController : MonoBehaviour
         // control valid positions of selection box based on job mode
         if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall) 
             & (p.x < 1 | p.x >= MapX - 1 | p.y < 1 | p.y >= MapY - 1))
-            | ((Mode == ControlMode.Mortar | Mode == ControlMode.Medic) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2))
+            | ((Mode == ControlMode.Mortar | Mode == ControlMode.Medic | Mode == ControlMode.Gun) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2))
             | ((Mode == ControlMode.Sentry) & (p.x < 0 | p.x >= MapX | p.y < 0 | p.y >= MapY)))
         {
             SelectionBox.SetActive(false);
@@ -191,6 +191,9 @@ public class GameController : MonoBehaviour
                     break;
                 case ControlMode.Medic:
                     mapController.PlaceMedic(p);
+                    break;
+                case ControlMode.Gun:
+                    mapController.PlaceGun(p);
                     break;
             }
         }
@@ -230,6 +233,9 @@ public class GameController : MonoBehaviour
         {
             case ControlMode.Dig:
                 SelectionBox.GetComponent<SpriteRenderer>().sprite = OneTileSelectionBox;
+                break;
+            case ControlMode.Gun:
+                SelectionBox.GetComponent<SpriteRenderer>().sprite = ThreeTileSelectionBox;
                 break;
             case ControlMode.Wall:
                 SelectionBox.GetComponent<SpriteRenderer>().sprite = OneTileSelectionBox;

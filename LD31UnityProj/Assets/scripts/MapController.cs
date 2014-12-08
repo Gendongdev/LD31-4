@@ -96,6 +96,26 @@ public enum Tile
     Built_Medic_RU,
     Built_Medic_RM,
     Built_Medic_RD,
+    Gun_Empty,
+    Gun_LU,
+    Gun_LM,
+    Gun_LD,
+    Gun_MU,
+    Gun_MM,
+    Gun_MD,
+    Gun_RU,
+    Gun_RM,
+    Gun_RD,
+    Built_Gun_Empty,
+    Built_Gun_LU,
+    Built_Gun_LM,
+    Built_Gun_LD,
+    Built_Gun_MU,
+    Built_Gun_MM,
+    Built_Gun_MD,
+    Built_Gun_RU,
+    Built_Gun_RM,
+    Built_Gun_RD,
     Max
 }
 
@@ -105,6 +125,8 @@ public enum BuildingType
     Built_Mortar,
     Medic,
     Built_Medic,
+    Gun,
+    Built_Gun,
     Max
 }
 
@@ -117,9 +139,7 @@ public class MapController : MonoBehaviour
     public Transform MapTransform;
     public Transform BuildingsTransform;
     public GameObject[] TileSprites = new GameObject[(int)Tile.Max];
-
     public GameObject[] Buildings = new GameObject[(int)BuildingType.Max];
-
     private JobQueue queue;
     private GameController gameController;
     
@@ -303,6 +323,55 @@ public class MapController : MonoBehaviour
         return true;
     }
 
+    public bool PlaceGun(Vector2 location)
+    {
+        int x = (int)location.x;
+        int y = (int)location.y;
+        
+        int[] location_array = new int[2] {x, y};
+        
+        if (!TileHelper.IsEmpty(TileArray[x, y - 2]) & !TileHelper.IsTrench(TileArray[x, y - 2]))
+            return false;
+        
+        for (int x_iter = x-1; x_iter <= x+1; x_iter++)
+        {
+            for (int y_iter = y-1; y_iter <= y+1; y_iter++)
+            {
+                if (!TileHelper.IsEmpty(TileArray[x_iter, y_iter]))
+                {
+                    return false;
+                }
+            }
+        }
+        
+        TileArray[x - 1, y - 1] = Tile.Gun_LD;
+        TileArray[x - 1, y] = Tile.Gun_LM;
+        TileArray[x - 1, y + 1] = Tile.Gun_LU;
+        TileArray[x, y - 1] = Tile.Gun_MD;
+        TileArray[x, y] = Tile.Gun_MM;
+        TileArray[x, y + 1] = Tile.Gun_MU;
+        TileArray[x + 1, y - 1] = Tile.Gun_RD;
+        TileArray[x + 1, y] = Tile.Gun_RM;
+        TileArray[x + 1, y + 1] = Tile.Gun_RU;
+        
+        for (int x_iter = x-1; x_iter == x+1; x_iter++)
+        {
+            for (int y_iter = y-1; y_iter == y+1; y_iter++)
+            {
+                UpdateTileObject(x, y);
+            }
+        }
+        
+        RefreshTileTrench(x, y - 2);
+        
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Gun, JobTime.BUILD_GUN));
+        
+        GameObject new_gun = (GameObject)Instantiate(Buildings[(int)BuildingType.Gun], new Vector3(x, y, 1f), Quaternion.identity);
+        Transform new_transform = new_gun.GetComponent<Transform>();
+        new_transform.parent = BuildingsTransform;
+        return true;
+    }
+    
     public bool PlaceWallTile(Vector2 location)
     {
         // Debug.Log("Placing tile at " + location);
@@ -472,11 +541,45 @@ public class MapController : MonoBehaviour
             }
         }
         
-        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Medic], new Vector3(x, y, 2f), Quaternion.identity);
-        Transform new_transform = new_mortar.GetComponent<Transform>();
+        GameObject new_medic = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Medic], new Vector3(x, y, 2f), Quaternion.identity);
+        Transform new_transform = new_medic.GetComponent<Transform>();
         new_transform.parent = BuildingsTransform;
         
         queue.Jobs.Add(new Job(new int[] {x,y}, JobType.Do_Medic, JobTime.DO_MEDIC));
+        Debug.Log(queue.Jobs.Count);
+    }
+
+    public void BuildGun(int x, int y)
+    {
+        for (int x_iter = x-1; x_iter <= x+1; x_iter++)
+        {
+            for (int y_iter = y-1; y_iter <= y+1; y_iter++)
+            {
+                if (!TileHelper.IsEmpty(TileArray[x_iter, y_iter]))
+                {
+                    if (TileHelper.IsGun(TileArray[x_iter, y_iter]) 
+                        & !TileHelper.IsBuiltGun(TileArray[x_iter, y_iter]))
+                    {
+                        TileArray[x_iter, y_iter] = (Tile)((int)TileArray[x_iter, y_iter] + 10); // magic number. bad boy!
+                        UpdateTileObject(x_iter, y_iter);
+                    }
+                }
+            }
+        }
+        
+        foreach (Transform building in BuildingsTransform.GetComponentsInChildren<Transform>())
+        {
+            if (building.position.x == x & building.position.y == y)
+            {
+                Destroy(building.gameObject);
+            }
+        }
+        
+        GameObject new_gun = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Gun], new Vector3(x, y, 2f), Quaternion.identity);
+        Transform new_transform = new_gun.GetComponent<Transform>();
+        new_transform.parent = BuildingsTransform;
+        
+        queue.Jobs.Add(new Job(new int[] {x,y}, JobType.Fire_Gun, JobTime.FIRE_GUN));
         Debug.Log(queue.Jobs.Count);
     }
 
@@ -486,7 +589,13 @@ public class MapController : MonoBehaviour
         GameObject new_player_mortar = (GameObject)Instantiate(gameController.PlayerMortarPrefab, new Vector3(x, y + 1.5f, -2f), Quaternion.identity);
         new_player_mortar.GetComponent<Transform>().SetParent(gameController.ProjectileTransform);
     }
-
+    public void FireGun(int x, int y)
+    {
+        Debug.Log("Firing gun at " + x + ", " + y);
+        GameObject new_player_bullet = (GameObject)Instantiate(gameController.PlayerBulletPrefab, new Vector3(x, y + 1.8f, -2f), Quaternion.identity);
+        new_player_bullet.GetComponent<Transform>().SetParent(gameController.ProjectileTransform);
+    }
+    
     public void DoMedic(int x, int y)
     {
         Transform[] unit_list = gameController.UnitTransform.GetComponentsInChildren<Transform>();
@@ -576,6 +685,21 @@ public class MapController : MonoBehaviour
                             }
                         }
                     
+                    } else if (TileHelper.IsBuiltGun(TileArray[x, y]))
+                    {
+                        int[] offset = TileHelper.GetOffsetOfBuilding(TileArray[x, y]);
+                        int gun_x = x + offset[0];
+                        int gun_y = y + offset[1];
+                        
+                        
+                        foreach (Transform building in building_list)
+                        {
+                            if ((Vector2)building.position == new Vector2(gun_x, gun_y))
+                            {
+                                building.GetComponent<Building>().HitPoints -= 1;
+                            }
+                        }
+                        
                     }
                 } catch (System.Exception e)
                 {
@@ -1034,18 +1158,48 @@ public class TileHelper : MonoBehaviour
             return true;
         }
     }
+
+    public static bool IsGun(Tile tile)
+    {
+        if (tile < Tile.Gun_LU)
+        {
+            return false;
+        } else if (tile > Tile.Built_Gun_RD)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
     
+    public static bool IsBuiltGun(Tile tile)
+    {
+        if (tile < Tile.Built_Gun_LU)
+        {
+            return false;
+        } else if (tile > Tile.Built_Gun_RD)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
     public static bool IsUnpassableBuilding(Tile tile)
     {
         if (tile < Tile.Mortar_Empty)
         {
             return false;
         } else if ((Tile.Built_Mortar_LU <= tile & tile <= Tile.Built_Mortar_MU) 
-            | (Tile.Built_Medic_LU <= tile & tile <= Tile.Built_Medic_MU))
+            | (Tile.Built_Medic_LU <= tile & tile <= Tile.Built_Medic_MU)
+            | (Tile.Built_Gun_LU <= tile & tile <= Tile.Built_Gun_MU))
         {
             return true;
         } else if ((Tile.Built_Mortar_RU <= tile & tile <= Tile.Built_Mortar_RD)
-            | (Tile.Built_Medic_RU <= tile & tile <= Tile.Built_Medic_RD))
+            | (Tile.Built_Medic_RU <= tile & tile <= Tile.Built_Medic_RD)
+            | (Tile.Built_Gun_RU <= tile & tile <= Tile.Built_Gun_RD))
         {
             return true;
         } else
@@ -1060,7 +1214,8 @@ public class TileHelper : MonoBehaviour
         {
             return false;
         } else if ((Tile.Mortar_MM <= tile & tile <= Tile.Mortar_MD)
-            | (Tile.Medic_MM <= tile & tile <= Tile.Medic_MD))
+            | (Tile.Medic_MM <= tile & tile <= Tile.Medic_MD)
+            | (Tile.Gun_MM <= tile & tile <= Tile.Gun_MD))
         {
             return true;
         } else
@@ -1068,13 +1223,15 @@ public class TileHelper : MonoBehaviour
             return false;
         }
     }
+
     public static bool IsWalkableBuilding(Tile tile)
     {
         if (tile < Tile.Mortar_Empty)
         {
             return false;
         } else if ((Tile.Built_Mortar_MM <= tile & tile <= Tile.Built_Mortar_MD)
-            | (Tile.Built_Medic_MM <= tile & tile <= Tile.Built_Medic_MD))
+            | (Tile.Built_Medic_MM <= tile & tile <= Tile.Built_Medic_MD)
+            | (Tile.Built_Gun_MM <= tile & tile <= Tile.Built_Gun_MD))
         {
             return true;
         } else
@@ -1082,6 +1239,7 @@ public class TileHelper : MonoBehaviour
             return false;
         }
     }
+
     public static bool IsEmpty(Tile tile)
     {
         if (tile == Tile.Empty)
@@ -1092,6 +1250,7 @@ public class TileHelper : MonoBehaviour
             return false;
         }
     }
+
     public static int[] GetOffsetOfBuilding(Tile tile)
     {
         int[] offset = new int[2];
@@ -1150,6 +1309,34 @@ public class TileHelper : MonoBehaviour
                 offset = new int[] {-1,0};
                 break;
             case Tile.Built_Medic_RD:
+                offset = new int[] {-1,1};
+                break;
+
+            case Tile.Built_Gun_LU:
+                offset = new int[] {1,-1};
+                break;
+            case Tile.Built_Gun_LM:
+                offset = new int[] {1,0};
+                break;
+            case Tile.Built_Gun_LD:
+                offset = new int[] {1,1};
+                break;
+            case Tile.Built_Gun_MU:
+                offset = new int[] {0,-1};
+                break;
+            case Tile.Built_Gun_MM:
+                offset = new int[] {0,0};
+                break;
+            case Tile.Built_Gun_MD:
+                offset = new int[] {0,1};
+                break;
+            case Tile.Built_Gun_RU:
+                offset = new int[] {-1,-1};
+                break;
+            case Tile.Built_Gun_RM:
+                offset = new int[] {-1,0};
+                break;
+            case Tile.Built_Gun_RD:
                 offset = new int[] {-1,1};
                 break;
         }
