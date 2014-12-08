@@ -12,23 +12,6 @@ TODO:
 
 - handle pathfinding failures - done?
 
-- other player constructions, with resultant UI
-	- walls
-		- have a large number of hit points - DONE
-		- stop machine gun fire - from both directions! - DONE for enemy fire
-		- can't be crossed by troops - DONE
-	- machine gun - supress enemy fire
-		- no mortars from a column where a machine gun has shot a bullet in last N seconds
-	- mortar
-		- if it collides with an enemy mortar, both destroyed in mid air (no damage?) - DONE
-		- each mortar over the top shortens current enemy fire period or adds delay to next - DONE
-	- sentry
-		- troop stays where it is for N ticks - DONE
-	- medic:
-		- heal HP (and morale???) of each unit in a certain radius - DONE
-
-- gun, mortar, medic will all be constant jobs, for as long as the building stands - DONE
-
 - more sophisticated enemy fire:
 	- waves of machine gun fire and mortar fire - basics implemented
 		- some randomness
@@ -63,10 +46,23 @@ TODO:
 
 
 
+DONE:
+- other player constructions, with resultant UI - DONE!!!!
+	- walls
+		- have a large number of hit points - DONE
+		- stop machine gun fire - from both directions! - DONE
+		- can't be crossed by troops - DONE
+	- machine gun - supress enemy fire
+		- reduced change of enemy fire in 5-column area around where a machine gun has shot a bullet in last N seconds - DONE
+	- mortar
+		- if it collides with an enemy mortar, both destroyed in mid air (no damage?) - DONE
+		- each mortar over the top shortens current enemy fire period or adds delay to next - DONE
+	- sentry
+		- troop stays where it is for N ticks - DONE
+	- medic:
+		- heal HP (and morale???) of each unit in a certain radius - DONE
 
-
-
-
+- gun, mortar, medic will all be constant jobs, for as long as the building stands - DONE
 
 
 - UI:

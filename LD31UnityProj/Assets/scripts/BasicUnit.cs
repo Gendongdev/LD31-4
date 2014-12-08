@@ -210,6 +210,30 @@ public class BasicUnit : MonoBehaviour
             return;
         }
 
+        // for jobs in buildings, check that the building still exists
+        
+        if (MyJob.Type == JobType.Fire_Mortar | MyJob.Type == JobType.Do_Medic | MyJob.Type == JobType.Fire_Gun)
+        {
+            bool stillExists = false;
+            
+            foreach (Transform building in mapController.BuildingsTransform)
+            {
+                if (building.GetInstanceID() != mapController.BuildingsTransform.GetInstanceID()
+                    & building.tag == "Building")
+                if ((Vector2)building.position == new Vector2(MyJob.Location[0], MyJob.Location[1]))
+                {
+                    stillExists = true;
+                }
+            }
+            
+            if (!stillExists)
+            {
+                Debug.Log("My building is missing! Getting new job.");
+                MyJob = null;
+                return;
+            }
+        }
+
         Vector2 dest_pos = new Vector2(MyJob.Location[0], MyJob.Location[1]);
         Debug.DrawLine(dest_pos, new Vector3(dest_pos.x, dest_pos.y + MyJob.TimeLeft / 10f), Color.green);
 
@@ -217,30 +241,6 @@ public class BasicUnit : MonoBehaviour
         {
             nextCheckTime = Time.time + CheckTime;
             MyJob.TimeLeft -= 1;
-
-            // for jobs in buildings, check that the building still exists
-
-            if (MyJob.Type == JobType.Fire_Mortar | MyJob.Type == JobType.Do_Medic | MyJob.Type == JobType.Fire_Gun)
-            {
-                bool stillExists = false;
-
-                foreach (Transform building in mapController.BuildingsTransform)
-                {
-                    if (building.GetInstanceID() != mapController.BuildingsTransform.GetInstanceID()
-                        & building.tag == "Building")
-                    if ((Vector2)building.position == new Vector2(MyJob.Location[0], MyJob.Location[1]))
-                    {
-                        stillExists = true;
-                    }
-                }
-
-                if (!stillExists)
-                {
-                    Debug.Log("My building is missing! Getting new job.");
-                    MyJob = null;
-                    return;
-                }
-            }
 
             // process finished jobs
             if (MyJob.TimeLeft <= 0)

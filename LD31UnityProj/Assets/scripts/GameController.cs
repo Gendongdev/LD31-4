@@ -34,6 +34,7 @@ public class GameController : MonoBehaviour
     public float TimeBetweenEnemyGunWave = 5;
     public float DurationEnemyMortarWave = 6;
     public float DurationEnemyGunWave = 5;
+    public int SuppressedFireChance = 80;
     public ControlMode Mode = ControlMode.Dig;
     public Transform[] Buttons;
     public UnityEngine.UI.Text StatusText;
@@ -48,6 +49,7 @@ public class GameController : MonoBehaviour
     private float nextEnemyMortarStateChange;
     private bool enemyMortarFire;
     private bool enemyGunFire;
+    private float[] fireSuppression;
 
     // Use this for initialization
     void Start()
@@ -69,6 +71,13 @@ public class GameController : MonoBehaviour
 
         nextEnemyGunStateChange = FirstEnemyGunTime;
         nextEnemyMortarStateChange = FirstEnemyMortarTime;
+
+        fireSuppression = new float[MapX];
+        for (int i = 0; i < MapX; i++)
+        {
+            fireSuppression[i] = 0;
+        }
+
     }
     
     // Update is called once per frame
@@ -214,15 +223,48 @@ public class GameController : MonoBehaviour
     void AddEnemyBullet()
     {
         int bullet_x = Random.Range(0, MapX);
-        GameObject new_bullet = (GameObject)Instantiate(EnemyBulletPrefab, new Vector3(bullet_x, MapY, -2f), Quaternion.identity);
-        new_bullet.GetComponent<Transform>().SetParent(ProjectileTransform);
+
+        int needed = 0;
+
+        if (fireSuppression[bullet_x] > Time.time)
+        {
+            needed = SuppressedFireChance;
+        }
+
+        int to_fire = Random.Range(0, 100);
+
+        if (to_fire >= needed)
+        {
+            GameObject new_bullet = (GameObject)Instantiate(EnemyBulletPrefab, new Vector3(bullet_x, MapY, -2f), Quaternion.identity);
+            new_bullet.GetComponent<Transform>().SetParent(ProjectileTransform);
+        } else
+        {
+            Debug.Log("Didn't fire bullet due to fire suppression.");
+        }
+
     }
 
     void AddEnemyMortar()
     {
         int mortar_x = Random.Range(2, MapX - 2);
-        GameObject new_mortar = (GameObject)Instantiate(EnemyMortarPrefab, new Vector3(mortar_x, MapY, -2f), Quaternion.identity);
-        new_mortar.GetComponent<Transform>().SetParent(ProjectileTransform);
+
+        int needed = 0;
+        
+        if (fireSuppression[mortar_x] > Time.time)
+        {
+            needed = SuppressedFireChance;
+        }
+        
+        int to_fire = Random.Range(0, 100);
+        
+        if (to_fire >= needed)
+        {
+            GameObject new_mortar = (GameObject)Instantiate(EnemyMortarPrefab, new Vector3(mortar_x, MapY, -2f), Quaternion.identity);
+            new_mortar.GetComponent<Transform>().SetParent(ProjectileTransform);
+        } else
+        {
+            Debug.Log("Didn't fire mortar due to fire suppression.");
+        }
     }
 
     public void SetMode(int mode)
@@ -268,6 +310,17 @@ public class GameController : MonoBehaviour
         } else
         {
             nextEnemyGunStateChange += 0.5f;
+        }
+    }
+
+    public void SuppressFire(int x)
+    {
+        for (int i = (x-2); i <= (x+2); i++)
+        {
+            if (i >= 0 & i < MapX)
+            {
+                fireSuppression[i] = Time.time + JobTime.MACHINE_GUN_SUPPRESS_TIME;
+            }
         }
     }
 }

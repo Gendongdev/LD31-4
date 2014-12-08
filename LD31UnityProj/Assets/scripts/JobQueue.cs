@@ -25,11 +25,12 @@ public static class JobTime
     public const int FIRE_MORTAR = 20;
     public const int SENTRY = 10;
     public const int BUILD_GUN = 15;
-    public const int FIRE_GUN = 2;
+    public const int FIRE_GUN = 1;
     public const int BUILD_MEDIC = 25;
     public const int DO_MEDIC = 15;
 
     public const float SENTRY_EXPIRE_TIME = 0.5f;
+    public const float MACHINE_GUN_SUPPRESS_TIME = 0.5f;
 }
 
 public class JobQueue : MonoBehaviour

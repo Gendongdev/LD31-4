@@ -26,6 +26,13 @@ public class Bullet : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        if (transform.position.y > gameController.MapY + 0.5)
+        {
+            Debug.Log("Suppressing fire in column " + current_pos.x);
+            gameController.SuppressFire((int)current_pos.x);
+            Destroy(gameObject);
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
