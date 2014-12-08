@@ -14,6 +14,7 @@ public enum JobType
     Fire_Gun,
     Build_Medic,
     Do_Medic,
+    Charge,
     Max
 }
 
@@ -28,8 +29,10 @@ public static class JobTime
     public const int FIRE_GUN = 1;
     public const int BUILD_MEDIC = 25;
     public const int DO_MEDIC = 15;
+    public const int CHARGE = 0;
 
     public const float SENTRY_EXPIRE_TIME = 0.5f;
+    public const float CHARGE_EXPIRE_TIME = 1f;
     public const float MACHINE_GUN_SUPPRESS_TIME = 0.5f;
 }
 
@@ -53,9 +56,10 @@ public class JobQueue : MonoBehaviour
         List<Job> jobs_to_remove = new List<Job>();
         foreach (Job this_job in Jobs)
         {
-            if (this_job.Type == JobType.Sentry & Time.time >= this_job.ExpireTime)
+            if ((this_job.Type == JobType.Sentry | this_job.Type == JobType.Charge) 
+                & Time.time >= this_job.ExpireTime)
             {
-                Debug.Log("Removing expired sentry job from queue.");
+                Debug.Log("Removing expired job from queue.");
                 jobs_to_remove.Add(this_job);
             }
 
@@ -108,6 +112,9 @@ public class Job
         if (Type == JobType.Sentry)
         {
             ExpireTime = Time.time + JobTime.SENTRY_EXPIRE_TIME;
+        } else if (Type == JobType.Charge)
+        {
+            ExpireTime = Time.time + JobTime.CHARGE_EXPIRE_TIME;
         }
     }
 

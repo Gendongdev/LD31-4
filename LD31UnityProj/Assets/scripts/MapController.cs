@@ -173,6 +173,13 @@ public class MapController : MonoBehaviour
                 UpdateTileObject(x, y);
             }
         }
+
+        for (int x = 0; x < MapX; x++)
+        {
+            GraphUpdateObject guo = new GraphUpdateObject(new Bounds(new Vector3(x, MapY), new Vector3(0.99f, 0.99f, 1)));
+            guo.addPenalty = 1000000;
+            AstarPath.active.UpdateGraphs(guo);
+        }
     }
 
     public bool PlaceSentry(Vector2 location)

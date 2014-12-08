@@ -88,12 +88,14 @@ public class BasicUnit : MonoBehaviour
         }
 
         Vector2 center_pos = (Vector2)transform.position + new Vector2(0.5f, 0.5f);
-        if (TileHelper.IsBuiltTrench(mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)]))
+        inTrench = false;
+
+        if (center_pos.y < gameController.MapY)
         {
-            inTrench = true;
-        } else
-        {
-            inTrench = false;
+            if (TileHelper.IsBuiltTrench(mapController.TileArray[Mathf.FloorToInt(center_pos.x), Mathf.FloorToInt(center_pos.y)]))
+            {
+                inTrench = true;
+            } 
         }
 
         int hit_sprite_index = HitPoints;
@@ -292,6 +294,12 @@ public class BasicUnit : MonoBehaviour
                         queue.Jobs.Add(new Job(MyJob.Location, JobType.Fire_Gun, JobTime.FIRE_GUN));
                         mapController.FireGun(MyJob.Location[0], MyJob.Location[1]);
                         MyJob = null;
+                        break;
+
+                    case JobType.Charge:
+                        gameController.ScorePoint();
+                        MyJob = null;
+                        Destroy(gameObject);
                         break;
                 }
             }

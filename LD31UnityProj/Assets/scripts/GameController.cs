@@ -40,6 +40,8 @@ public class GameController : MonoBehaviour
     public UnityEngine.UI.Text StatusText;
     public Sprite OneTileSelectionBox;
     public Sprite ThreeTileSelectionBox;
+    public float ScoreReduceTime = 5f;
+    public int VictoryScore;
 
     private MapController mapController;
     private float nextReinforcement;
@@ -50,6 +52,14 @@ public class GameController : MonoBehaviour
     private bool enemyMortarFire;
     private bool enemyGunFire;
     private float[] fireSuppression;
+    private JobQueue queue;
+    private int score;
+    private float nextScoreReduction;
+
+    private bool isRunning = true;
+
+    private bool hasWon = false;
+    private bool hasLost = false;
 
     // Use this for initialization
     void Start()
@@ -60,6 +70,8 @@ public class GameController : MonoBehaviour
         mapController.TileArray = new Tile[MapX, MapY];
         mapController.GameObjectArray = new GameObject[MapX, MapY];
         mapController.InitMap();
+
+        queue = GameObject.Find("game_controller").GetComponent<JobQueue>();
 
         AddSoldier();
         AddSoldier();
@@ -78,22 +90,45 @@ public class GameController : MonoBehaviour
             fireSuppression[i] = 0;
         }
 
+        score = 0;
     }
     
     // Update is called once per frame
     void Update()
     {
-        ProcessMouse();
-
-        if (Time.time >= nextReinforcement)
+        if (isRunning)
         {
-            AddSoldier();
-            nextReinforcement = Time.time + ReinforcementsTime;
+            ProcessMouse();
+
+            if (Time.time >= nextReinforcement)
+            {
+                AddSoldier();
+                nextReinforcement = Time.time + ReinforcementsTime;
+            }
+
+            EnemyStateChanges();
+            EnemyFire();
+
+            if (Time.time >= nextScoreReduction)
+            {
+                if (score > 0)
+                {
+                    score -= 1;
+                    Debug.Log("Score reduced. Score: " + score);
+                }
+                nextScoreReduction = Time.time + ScoreReduceTime;
+            }
+
+            if (!hasWon & !hasLost)
+            {
+                hasWon = CheckWin();
+                hasLost = CheckLose();
+            } else
+            {
+                isRunning = false;
+            }
         }
-
-        EnemyStateChanges();
-        EnemyFire();
-
+               
     }
 
     void EnemyStateChanges()
@@ -323,4 +358,45 @@ public class GameController : MonoBehaviour
             }
         }
     }
+
+    public void Charge()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            int charge_x = Random.Range(0, MapX);
+            int[] location_array = new int[2] {charge_x, MapY};
+            queue.Jobs.Add(new Job(location_array, JobType.Charge, JobTime.CHARGE));
+        }
+    }
+
+    public void ScorePoint()
+    {
+        score += 1;
+        nextScoreReduction = Time.time + ScoreReduceTime;
+        Debug.Log("Score: " + score);
+    }
+
+    public bool CheckWin()
+    {
+        if (score > VictoryScore)
+        {
+            Debug.Log("You win!!!");
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool CheckLose()
+    {
+        foreach (Transform unit in UnitTransform)
+        {
+            if (unit.tag == "Player")
+                return false;
+        }
+
+        Debug.Log("You lose!!!");
+        return true;
+    }
+
 }
