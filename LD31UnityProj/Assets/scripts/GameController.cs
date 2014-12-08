@@ -50,10 +50,12 @@ public class GameController : MonoBehaviour
     public AudioClip ReinforceSound;
     public AudioClip MortarHitSound;
     public AudioClip BulletHitSound;
+    public AudioClip PlaceFailSound;
 
     public GameObject LosePanel;
     public GameObject WinPanel;
     public GameObject StartPanel;
+    public UnityEngine.UI.Text ControlText;
 
     private MapController mapController;
     private float nextReinforcement;
@@ -121,6 +123,7 @@ public class GameController : MonoBehaviour
                 nextScoreReduction = Time.time + ScoreReduceTime;
             }
 
+            ControlText.text = "Current Tool:\n" + Mode + "\n\n" + (VictoryScore - score) + " Troops\nto Victory";
             if (!HasWon & !HasLost)
             {
                 HasWon = CheckWin();
@@ -207,6 +210,8 @@ public class GameController : MonoBehaviour
 
     void ProcessMouse()
     {
+        bool place_success = true;
+
         Vector2 p = LevelCamera.ScreenToWorldPoint(Input.mousePosition);
         p.x = Mathf.Floor(p.x);
         p.y = Mathf.Floor(p.y);
@@ -244,20 +249,25 @@ public class GameController : MonoBehaviour
             switch (Mode)
             {
                 case ControlMode.Sentry:
-                    mapController.PlaceSentry(p);
+                    place_success = mapController.PlaceSentry(p);
                     break;
                 case ControlMode.Mortar:
-                    mapController.PlaceMortar(p);
+                    place_success = mapController.PlaceMortar(p);
                     break;
                 case ControlMode.Medic:
-                    mapController.PlaceMedic(p);
+                    place_success = mapController.PlaceMedic(p);
                     break;
                 case ControlMode.Gun:
-                    mapController.PlaceGun(p);
+                    place_success = mapController.PlaceGun(p);
                     break;
             }
         }
-        
+
+        if (!place_success)
+        {
+            audio.clip = PlaceFailSound;
+            audio.Play();
+        }
 //        if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
 //        {
 //            mapController.RemoveTile(p);
