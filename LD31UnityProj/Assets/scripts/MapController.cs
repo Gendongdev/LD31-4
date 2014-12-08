@@ -67,6 +67,7 @@ public class MapController : MonoBehaviour
     public GameObject[,] GameObjectArray;
     public Transform MapTransform;
     public GameObject[] TileSprites = new GameObject[(int)Tile.Max];
+
     private JobQueue queue;
     private GameController gameController;
     
@@ -167,7 +168,7 @@ public class MapController : MonoBehaviour
         RefreshTileWall(x, y - 1);
         RefreshTileWall(x, y + 1);
         
-        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, 10));
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, 20));
         
         // Debug.Log(queue.Jobs.Count);
         
@@ -180,13 +181,13 @@ public class MapController : MonoBehaviour
         int y = (int)location.y;
         
         // check if tile is empty
-        if (!TileHelper.IsTrench(TileArray[x, y]))
+        if (TileHelper.IsEmpty(TileArray[x, y]))
         {
             Debug.Log("Tile is empty.");
             return false;
         }
         
-        if (TileArray[x, y] >= Tile.Built_Empty)
+        if (TileHelper.IsBuiltWall(TileArray[x, y]) | TileHelper.IsBuiltTrench(TileArray[x, y]))
         {
             Debug.Log("Tile is already built!");
             return false;
@@ -225,6 +226,11 @@ public class MapController : MonoBehaviour
         RefreshTileTrench(x + 1, y);
         RefreshTileTrench(x, y - 1);
         RefreshTileTrench(x, y + 1);
+
+        RefreshTileWall(x - 1, y);
+        RefreshTileWall(x + 1, y);
+        RefreshTileWall(x, y - 1);
+        RefreshTileWall(x, y + 1);
         
         return true;
     }
@@ -262,12 +268,11 @@ public class MapController : MonoBehaviour
                         UpdateTileObject(x, y);
                     } else if (TileHelper.IsBuiltWall(TileArray[x, y]))
                     {
-                        TileArray[x, y] = Tile.Empty;
-                        UpdateTileObject(x, y);
+                        GameObjectArray[x, y].GetComponent<Wall>().HitPoints -= 5;
                     }
                 } catch (System.Exception e)
                 {
-                    Debug.Log(TileArray + ", " + x + ", " + y);
+                    Debug.Log(TileArray + ", " + x + ", " + y + ", " + TileArray[x, y]);
                     throw e;
                 }
             }
@@ -297,8 +302,16 @@ public class MapController : MonoBehaviour
                     BasicUnit unit_script = unit.GetComponent<BasicUnit>();
                     if (unit_script != null)
                     {
-                        unit_script.MoralePoints = 0;
-                        unit_script.HitPoints -= 5;
+                        if (unit_script.inTrench)
+                        {
+                            unit_script.MoralePoints -= 2;
+                            unit_script.HitPoints -= 2;
+                        } else
+                        {
+                            unit_script.MoralePoints = 0;
+                            unit_script.HitPoints -= 5;
+                        }
+
                         if (unit_script.MyJob != null)
                         {
                             unit_script.MyJob.TimeLeft += 10;
@@ -313,7 +326,64 @@ public class MapController : MonoBehaviour
         }
         
     }
-    
+
+    public void WallDestroy(int x, int y)
+    {
+        TileArray[x, y] = Tile.Empty;
+        UpdateTileObject(x, y);
+
+        RefreshTileWall(x - 1, y);
+        RefreshTileWall(x + 1, y);
+        RefreshTileWall(x, y - 1);
+        RefreshTileWall(x, y + 1);
+
+    }
+    private void UpdateTileObject(int x, int y)
+    {
+        int hit_points = int.MinValue;
+
+        if (TileHelper.IsBuiltWall(TileArray[x, y]))
+        {
+            Wall old_wall = GameObjectArray[x, y].GetComponent<Wall>();
+            if (old_wall != null)
+            {
+                hit_points = old_wall.HitPoints;
+            }
+        }
+
+        Destroy(GameObjectArray[x, y]);
+        GameObject newObject = (GameObject)Instantiate(TileSprites[(int)TileArray[x, y]], new Vector3(x, y, 1f), 
+                                                       Quaternion.identity);
+        
+        Transform newTransform = newObject.GetComponent<Transform>();
+        newTransform.parent = MapTransform;
+        GameObjectArray[x, y] = newObject;
+        
+        GraphUpdateObject guo = new GraphUpdateObject(new Bounds(new Vector3(x, y), new Vector3(0.99f, 0.99f, 1)));
+        
+        guo.modifyWalkability = true;
+        guo.setWalkability = true;
+        
+        if (TileHelper.IsBuiltTrench(TileArray[x, y]))
+        {
+            guo.addPenalty = 1;
+            guo.setWalkability = true;
+        } else if (TileHelper.IsBuiltWall(TileArray[x, y]))
+        {
+            if (hit_points > int.MinValue)
+                newObject.GetComponent<Wall>().HitPoints = hit_points;
+
+            guo.setWalkability = false;
+        } else
+        {
+            guo.addPenalty = 30000;
+            guo.setWalkability = true;
+        }
+        
+        AstarPath.active.UpdateGraphs(guo);
+        
+    }
+
     private void RefreshTileTrench(int x, int y)
     {
         if (TileHelper.IsTrench(TileArray[x, y]))
@@ -356,40 +426,6 @@ public class MapController : MonoBehaviour
                 UpdateTileObject(x, y);
             }
         }
-    }
-    
-    private void UpdateTileObject(int x, int y)
-    {
-        Destroy(GameObjectArray[x, y]);
-        GameObject newObject = (GameObject)Instantiate(TileSprites[(int)TileArray[x, y]], new Vector3(x, y, 1f), 
-                                                       Quaternion.identity);
-        
-        Transform newTransform = newObject.GetComponent<Transform>();
-        newTransform.parent = MapTransform;
-        GameObjectArray[x, y] = newObject;
-        
-        GraphUpdateObject guo = new GraphUpdateObject(new Bounds(new Vector3(x, y), new Vector3(0.99f, 0.99f, 1)));
-
-        guo.modifyWalkability = true;
-        guo.setWalkability = true;
-
-        if (TileHelper.IsBuiltTrench(TileArray[x, y]))
-        {
-            guo.addPenalty = 1;
-            guo.setWalkability = true;
-        } else if (TileHelper.IsBuiltWall(TileArray[x, y]))
-        {
-            ;
-            guo.setWalkability = false;
-        } else
-        {
-            guo.addPenalty = 30000;
-            guo.setWalkability = true;
-        }
-        
-        AstarPath.active.UpdateGraphs(guo);
-        
-        
     }
     
     private Tile CheckNeighboursTrench(int x, int y)

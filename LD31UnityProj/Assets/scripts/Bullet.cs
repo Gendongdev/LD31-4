@@ -30,7 +30,12 @@ public class Bullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Player")
+        if (other.tag == "Wall")
+        {
+            Wall wall_script = other.GetComponent<Wall>();
+            wall_script.HitPoints -= 1;
+            Destroy(gameObject);
+        } else if (other.tag == "Player")
         {
             // Debug.Log("Hit a player! " + Time.time);
             BasicUnit unit_script = other.GetComponent<BasicUnit>();

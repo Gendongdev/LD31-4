@@ -54,6 +54,7 @@ public class BasicUnit : MonoBehaviour
         }
         if (MoralePoints <= 0 & !isFleeing)
         {
+            MoralePoints = 0;
             isFleeing = true;
             seeker.StartPath(transform.position, new Vector2(Random.Range(0, mapController.MapX), 0), OnPathComplete);
             nextMoraleTime = Time.time + MoraleRecoverTime;

@@ -5,15 +5,16 @@ Bugs:
 TODO:
 
 
-- make projectile hits work with walls
 - GUI for choosing item type
+	- needs to be extended for other build types
+
 - handle pathfinding failures
 
 - other player constructions, with resultant UI
 	- walls
 		- have a large number of hit points
 		- stop machine gun fire - from both directions!
-		- can't be crossed by troops
+		- can't be crossed by troops - DONE
 	- machine gun - supress enemy fire
 		- no mortars from a column where a machine gun has shot a bullet in last N seconds
 	- mortar
@@ -29,6 +30,10 @@ TODO:
 - more sophisticated enemy fire:
 	- waves of machine gun fire and mortar fire
 		- some randomness
+
+- reverse how job taking workers:
+	- jobs go to closest free worker - not whatever worker's first takes closest free job
+		(only relevant if more than one free worker, of course)
 
 - win condition
 	- over the top

@@ -28,9 +28,10 @@ public class GameController : MonoBehaviour
     public float ReinforcementsTime = 20f;
     public float EnemyMachineGunRate = 0.2f;
     public int FirstEnemyMachineGunTime = 5;
-    public ControlMode Mode = ControlMode.Dig;
     public float EnemyMortarRate = 0.5f;
     public int FirstEnemyMortarTime = 1;
+    public ControlMode Mode = ControlMode.Dig;
+    public Transform[] Buttons;
 
     private MapController mapController;
     private float nextReinforcement;
@@ -47,6 +48,8 @@ public class GameController : MonoBehaviour
         mapController.GameObjectArray = new GameObject[MapX, MapY];
         mapController.InitMap();
 
+        AddSoldier();
+        AddSoldier();
         AddSoldier();
 
         nextReinforcement = Time.time + ReinforcementsTime;
@@ -136,5 +139,10 @@ public class GameController : MonoBehaviour
     public void SetMode(int mode)
     {
         Mode = (ControlMode)mode;
+        for (int i = 0; i < Buttons.Length; i++)
+        {
+            Debug.Log(i + ": " + Buttons[i].GetComponent<UnityEngine.UI.Button>().spriteState.ToString());
+
+        }
     }
 }
