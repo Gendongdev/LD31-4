@@ -27,7 +27,6 @@ public class Mortar : MonoBehaviour
 
         if (transform.position.y <= TargetYPos)
         {
-            Debug.Log("Kaboom! " + TargetYPos);
             mapController.MortarHit((int)current_pos.x, TargetYPos);
             Destroy(gameObject);
         }

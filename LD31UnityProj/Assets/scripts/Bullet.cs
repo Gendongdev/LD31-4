@@ -5,16 +5,16 @@ public class Bullet : MonoBehaviour
 {
 
     public float BulletVelocity = -20f;
-
     public float ExposedHitChance = 0.95f;
     public float CoveredHitChance = 0.10f;
+    private GameController gameController;
 
     // Use this for initialization
     void Start()
     {
-	
+        gameController = GameObject.Find("game_controller").GetComponent<GameController>();
     }
-	
+    
     // Update is called once per frame
     void Update()
     {
@@ -34,6 +34,25 @@ public class Bullet : MonoBehaviour
         {
             Wall wall_script = other.GetComponent<Wall>();
             wall_script.HitPoints -= 1;
+            Destroy(gameObject);
+        } else if (other.tag == "Building")
+        {
+            Building building_script = other.GetComponent<Building>();
+            building_script.HitPoints -= 1;
+
+            Transform[] unit_list = gameController.UnitTransform.GetComponentsInChildren<Transform>();
+
+            foreach (Transform unit in unit_list)
+            {
+                if (gameController.UnitTransform.GetInstanceID() != unit.GetInstanceID())
+                {
+                    if (unit.position == building_script.transform.position)
+                    {
+                        BasicUnit unit_script = unit.GetComponent<BasicUnit>();
+                        unit_script.MoralePoints -= 1;
+                    }
+                }
+            }
             Destroy(gameObject);
         } else if (other.tag == "Player")
         {

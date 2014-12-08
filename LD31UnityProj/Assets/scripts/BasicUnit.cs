@@ -35,6 +35,8 @@ public class BasicUnit : MonoBehaviour
     private Seeker seeker;
     private int currentWayPoint = 0;
 
+    private Vector2 destination;
+
     // Use this for initialization
     void Start()
     {
@@ -56,7 +58,8 @@ public class BasicUnit : MonoBehaviour
         {
             MoralePoints = 0;
             isFleeing = true;
-            seeker.StartPath(transform.position, new Vector2(Random.Range(0, mapController.MapX), 0), OnPathComplete);
+            destination = new Vector2(Random.Range(0, mapController.MapX), 0);
+            seeker.StartPath(transform.position, destination, OnPathComplete);
             nextMoraleTime = Time.time + MoraleRecoverTime;
 
             // return job to queue.
@@ -139,7 +142,8 @@ public class BasicUnit : MonoBehaviour
             if (MyJob != null)
             {
                 queue.Jobs.Remove(MyJob);
-                seeker.StartPath(transform.position, new Vector2(MyJob.Location[0], MyJob.Location[1]), OnPathComplete);
+                destination = new Vector2(MyJob.Location[0], MyJob.Location[1]);
+                seeker.StartPath(transform.position, destination, OnPathComplete);
             }
         }
     }
@@ -198,7 +202,6 @@ public class BasicUnit : MonoBehaviour
                 {
                     case JobType.Dig_Trench:
                         mapController.BuildTrench(MyJob.Location[0], MyJob.Location[1]);
-                    // Debug.Log("Job's done!");
                         MyJob = null;
                         break;
 
@@ -246,8 +249,20 @@ public class BasicUnit : MonoBehaviour
     {
         if (!p.error)
         {
-            Path = p;
-            currentWayPoint = 0;
+            if ((Vector2)p.vectorPath[p.vectorPath.Count - 1] == destination)
+            {
+                Path = p;
+                currentWayPoint = 0;
+            } else
+            {
+                Debug.Log("path does not reach destination!");
+                if (MyJob != null)
+                {
+                    Debug.Log("returning job to queue");
+                    queue.Jobs.Add(MyJob);
+                    MyJob = null;
+                }
+            }
         }
     }
 }
