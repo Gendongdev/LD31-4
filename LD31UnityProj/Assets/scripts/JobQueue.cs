@@ -7,6 +7,8 @@ public enum JobType
     Empty,
     Dig_Trench,
     Build_Wall,
+    Build_Mortar,
+    Fire_Mortar,
     Max
 }
 

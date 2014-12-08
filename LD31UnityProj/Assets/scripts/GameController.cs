@@ -43,6 +43,9 @@ public class GameController : MonoBehaviour
 
     public UnityEngine.UI.Text StatusText;
 
+    public Sprite OneTileSelectionBox;
+    public Sprite ThreeTileSelectionBox;
+
     private MapController mapController;
     private float nextReinforcement;
     private float nextEnemyGun;
@@ -155,7 +158,9 @@ public class GameController : MonoBehaviour
         Vector2 p = LevelCamera.ScreenToWorldPoint(Input.mousePosition);
         p.x = Mathf.Floor(p.x);
         p.y = Mathf.Floor(p.y);
-        if (p.x < 0 | p.x >= MapX | p.y < 0 | p.y >= MapY)
+        if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall) 
+            & (p.x < 1 | p.x >= MapX - 1 | p.y < 1 | p.y >= MapY - 1))
+            | ((Mode == ControlMode.Mortar) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2)))
         {
             SelectionBox.SetActive(false);
         } else
@@ -174,6 +179,10 @@ public class GameController : MonoBehaviour
                 case ControlMode.Wall:
                     mapController.PlaceWallTile(p);
                     break;
+                case ControlMode.Mortar:
+                    mapController.PlaceMortar(p);
+                    break;
+
             }
 
         }
@@ -208,10 +217,18 @@ public class GameController : MonoBehaviour
     public void SetMode(int mode)
     {
         Mode = (ControlMode)mode;
-        for (int i = 0; i < Buttons.Length; i++)
-        {
-            Debug.Log(i + ": " + Buttons[i].GetComponent<UnityEngine.UI.Button>().spriteState.ToString());
 
+        switch (Mode)
+        {
+            case ControlMode.Dig:
+                SelectionBox.GetComponent<SpriteRenderer>().sprite = OneTileSelectionBox;
+                break;
+            case ControlMode.Wall:
+                SelectionBox.GetComponent<SpriteRenderer>().sprite = OneTileSelectionBox;
+                break;
+            case ControlMode.Mortar:
+                SelectionBox.GetComponent<SpriteRenderer>().sprite = ThreeTileSelectionBox;
+                break;
         }
     }
 }

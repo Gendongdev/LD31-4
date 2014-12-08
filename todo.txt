@@ -13,7 +13,7 @@ TODO:
 - other player constructions, with resultant UI
 	- walls
 		- have a large number of hit points - DONE
-		- stop machine gun fire - from both directions!
+		- stop machine gun fire - from both directions! - DONE for enemy fire
 		- can't be crossed by troops - DONE
 	- machine gun - supress enemy fire
 		- no mortars from a column where a machine gun has shot a bullet in last N seconds
@@ -28,10 +28,11 @@ TODO:
 - gun, mortar, medic will all be constant jobs, for as long as the building stands
 
 - more sophisticated enemy fire:
-	- waves of machine gun fire and mortar fire
+	- waves of machine gun fire and mortar fire - basics implemented
 		- some randomness
+		- balance
 
-- reverse how job taking workers:
+- reverse how job taking works:
 	- jobs go to closest free worker - not whatever worker's first takes closest free job
 		(only relevant if more than one free worker, of course)
 

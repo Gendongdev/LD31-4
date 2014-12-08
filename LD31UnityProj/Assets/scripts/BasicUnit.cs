@@ -206,6 +206,11 @@ public class BasicUnit : MonoBehaviour
                         mapController.BuildWall(MyJob.Location[0], MyJob.Location[1]);
                         MyJob = null;
                         break;
+
+                    case JobType.Build_Mortar:
+                        mapController.BuildMortar(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
                 }
             }
         }
