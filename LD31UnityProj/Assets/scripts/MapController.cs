@@ -648,6 +648,8 @@ public class MapController : MonoBehaviour
     {
         Transform[] building_list = BuildingsTransform.GetComponentsInChildren<Transform>();
 
+        bool dealt_damage = false;
+
         // destroy trenches and walls in 1-tile radius
         for (int x = hit_x - 1; x <= (hit_x + 1); x++)
         {
@@ -674,6 +676,7 @@ public class MapController : MonoBehaviour
                             if ((Vector2)building.position == new Vector2(mortar_x, mortar_y))
                             {
                                 building.GetComponent<Building>().HitPoints -= 1;
+                                dealt_damage = true;
                             }
                         }
 
@@ -689,6 +692,7 @@ public class MapController : MonoBehaviour
                             if ((Vector2)building.position == new Vector2(medic_x, medic_y))
                             {
                                 building.GetComponent<Building>().HitPoints -= 1;
+                                dealt_damage = true;
                             }
                         }
                     
@@ -704,6 +708,7 @@ public class MapController : MonoBehaviour
                             if ((Vector2)building.position == new Vector2(gun_x, gun_y))
                             {
                                 building.GetComponent<Building>().HitPoints -= 1;
+                                dealt_damage = true;
                             }
                         }
                         
@@ -745,10 +750,12 @@ public class MapController : MonoBehaviour
                         {
                             unit_script.MoralePoints -= 2;
                             unit_script.HitPoints -= 2;
+                            dealt_damage = true;
                         } else
                         {
                             unit_script.MoralePoints = 0;
                             unit_script.HitPoints -= 5;
+                            dealt_damage = true;
                         }
 
                         if (unit_script.MyJob != null)
@@ -763,7 +770,12 @@ public class MapController : MonoBehaviour
                 }
             }
         }
-        
+
+        if (dealt_damage)
+        {
+            gameController.audio.clip = gameController.MortarHitSound;
+            gameController.audio.Play();
+        }
     }
 
     public void WallDestroy(int x, int y)

@@ -44,6 +44,17 @@ public class GameController : MonoBehaviour
     public int VictoryScore;
     public bool IsRunning = true;
 
+    public bool HasWon = false;
+    public bool HasLost = false;
+
+    public AudioClip ReinforceSound;
+    public AudioClip MortarHitSound;
+    public AudioClip BulletHitSound;
+
+    public GameObject LosePanel;
+    public GameObject WinPanel;
+    public GameObject StartPanel;
+
     private MapController mapController;
     private float nextReinforcement;
     private float nextEnemyGun;
@@ -59,8 +70,7 @@ public class GameController : MonoBehaviour
 
 
 
-    private bool hasWon = false;
-    private bool hasLost = false;
+
 
     // Use this for initialization
     void Start()
@@ -73,17 +83,6 @@ public class GameController : MonoBehaviour
         mapController.InitMap();
 
         queue = GameObject.Find("game_controller").GetComponent<JobQueue>();
-
-        AddSoldier();
-        AddSoldier();
-        AddSoldier();
-
-        nextReinforcement = Time.time + ReinforcementsTime;
-        enemyMortarFire = false;
-        enemyGunFire = false;
-
-        nextEnemyGunStateChange = FirstEnemyGunTime;
-        nextEnemyMortarStateChange = FirstEnemyMortarTime;
 
         fireSuppression = new float[MapX];
         for (int i = 0; i < MapX; i++)
@@ -105,6 +104,8 @@ public class GameController : MonoBehaviour
             {
                 AddSoldier();
                 nextReinforcement = Time.time + ReinforcementsTime;
+                audio.clip = ReinforceSound;
+                audio.Play();
             }
 
             EnemyStateChanges();
@@ -120,16 +121,26 @@ public class GameController : MonoBehaviour
                 nextScoreReduction = Time.time + ScoreReduceTime;
             }
 
-            if (!hasWon & !hasLost)
+            if (!HasWon & !HasLost)
             {
-                hasWon = CheckWin();
-                hasLost = CheckLose();
+                HasWon = CheckWin();
+                if (!HasWon)
+                    HasLost = CheckLose();
             } else
             {
                 IsRunning = false;
             }
+        } else
+        {
+            if (HasLost)
+            {
+                LosePanel.SetActive(true);
+            }
+            if (HasWon)
+            {
+                WinPanel.SetActive(true);
+            }
         }
-               
     }
 
     void EnemyStateChanges()
@@ -140,11 +151,13 @@ public class GameController : MonoBehaviour
             {
                 nextEnemyGunStateChange = Time.time + TimeBetweenEnemyGunWave;
                 enemyGunFire = false;
+                TimeBetweenEnemyGunWave = TimeBetweenEnemyGunWave * 0.95f;
             } else
             {
                 nextEnemyGunStateChange = Time.time + DurationEnemyGunWave;
                 enemyGunFire = true;
                 nextEnemyGun = Time.time + EnemyGunRate;
+                DurationEnemyGunWave = DurationEnemyGunWave * 1.05f;
             }
         }
         if (Time.time > nextEnemyMortarStateChange)
@@ -153,11 +166,13 @@ public class GameController : MonoBehaviour
             {
                 nextEnemyMortarStateChange = Time.time + TimeBetweenEnemyMortarWave;
                 enemyMortarFire = false;
+                TimeBetweenEnemyMortarWave = TimeBetweenEnemyMortarWave * 0.95f;
             } else
             {
                 nextEnemyMortarStateChange = Time.time + DurationEnemyMortarWave;
                 enemyMortarFire = true;
                 nextEnemyMortar = Time.time + EnemyMortarRate;
+                DurationEnemyMortarWave = DurationEnemyMortarWave * 1.05f;
             }
         }
 
@@ -347,6 +362,8 @@ public class GameController : MonoBehaviour
         {
             nextEnemyGunStateChange += 0.5f;
         }
+        audio.clip = MortarHitSound;
+        audio.Play();
     }
 
     public void SuppressFire(int x)
@@ -368,8 +385,19 @@ public class GameController : MonoBehaviour
             int[] location_array = new int[2] {charge_x, MapY};
             queue.Jobs.Add(new Job(location_array, JobType.Charge, JobTime.CHARGE));
         }
-    }
 
+        // Charging kicks off enemy gunfire
+
+        enemyGunFire = true;
+        enemyMortarFire = true;
+
+        nextEnemyGunStateChange = Time.time + DurationEnemyGunWave;
+        nextEnemyGun = Time.time + EnemyGunRate;
+        nextEnemyMortarStateChange = Time.time + DurationEnemyMortarWave;
+        nextEnemyMortar = Time.time + EnemyMortarRate;
+        
+    }
+    
     public void ScorePoint()
     {
         score += 1;
@@ -398,6 +426,33 @@ public class GameController : MonoBehaviour
 
         Debug.Log("You lose!!!");
         return true;
+    }
+
+    public void GameStart()
+    {
+        StartPanel.SetActive(false);
+
+        nextReinforcement = Time.time + ReinforcementsTime;
+        
+        enemyMortarFire = false;
+        enemyGunFire = false;
+        
+        nextEnemyGunStateChange = Time.time + FirstEnemyGunTime;
+        nextEnemyMortarStateChange = Time.time + FirstEnemyMortarTime;
+
+        AddSoldier();
+        AddSoldier();
+        AddSoldier();
+        AddSoldier();
+        AddSoldier();
+
+        IsRunning = true;
+
+    }
+
+    public void Restart()
+    {
+        Application.LoadLevel(0);
     }
 
 }

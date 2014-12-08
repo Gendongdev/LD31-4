@@ -44,6 +44,8 @@ public class Bullet : MonoBehaviour
         {
             Wall wall_script = other.GetComponent<Wall>();
             wall_script.HitPoints -= 1;
+            gameController.audio.clip = gameController.BulletHitSound;
+            gameController.audio.Play();
             Destroy(gameObject);
         } else if (other.tag == "Building")
         {
@@ -63,7 +65,9 @@ public class Bullet : MonoBehaviour
                             unit_script.MoralePoints -= 1;
                     }
                 }
-            }
+            }            
+            gameController.audio.clip = gameController.BulletHitSound;
+            gameController.audio.Play();
             Destroy(gameObject);
         } else if (other.tag == "Player")
         {
@@ -85,6 +89,8 @@ public class Bullet : MonoBehaviour
             if (hit_chance <= to_hit)
             {
                 unit_script.HitPoints -= 1;
+                gameController.audio.clip = gameController.BulletHitSound;
+                gameController.audio.Play();
                 // Debug.Log("hp: " + unit_script.HitPoints);
                 Destroy(gameObject);
             } else
