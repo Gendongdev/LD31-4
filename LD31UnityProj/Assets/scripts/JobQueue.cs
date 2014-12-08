@@ -12,6 +12,14 @@ public enum JobType
     Max
 }
 
+public static class JobTimes
+{
+    public const int DIG_TRENCH = 10;
+    public const int BUILD_WALL = 15;
+    public const int BUILD_MORTAR = 30;
+    public const int FIRE_MORTAR = 10;
+}
+
 public class JobQueue : MonoBehaviour
 {
 

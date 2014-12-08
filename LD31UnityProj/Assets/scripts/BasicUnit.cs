@@ -30,6 +30,7 @@ public class BasicUnit : MonoBehaviour
 
     private JobQueue queue;
     private MapController mapController;
+    private GameController gameController;
     private float nextCheckTime;
     private float nextMoraleTime;
     private Seeker seeker;
@@ -40,6 +41,7 @@ public class BasicUnit : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        gameController = GameObject.Find("game_controller").GetComponent<GameController>();
         queue = GameObject.Find("game_controller").GetComponent<JobQueue>();
         mapController = GameObject.Find("map").GetComponent<MapController>();
         nextCheckTime = Time.time;
@@ -131,8 +133,28 @@ public class BasicUnit : MonoBehaviour
             {
                 Vector2 this_job_pos = new Vector2(this_job.Location[0], this_job.Location[1]);
                 float this_job_distance = (this_job_pos - current_pos).magnitude;
-                
-                if (this_job_distance < job_distance)
+
+                // make sure the tile is empty
+
+                bool isOccupied = false; 
+                Transform[] unit_list = gameController.UnitTransform.GetComponentsInChildren<Transform>();
+
+
+                foreach (Transform unit in unit_list)
+                {
+                    if (gameController.UnitTransform.GetInstanceID() != unit.GetInstanceID() 
+                        & transform.GetInstanceID() != unit.GetInstanceID()
+                        & unit.tag == "Player")
+                    {
+                        if ((Vector2)unit.position == new Vector2(this_job.Location[0], this_job.Location[1]))
+                        {
+                            Debug.Log("Not taking job " + this_job.Type + " as tile is occupied by " + unit.name);
+                            isOccupied = true;
+                        }
+                    }
+                }
+
+                if (this_job_distance < job_distance & !isOccupied)
                 {
                     MyJob = this_job;
                     job_distance = this_job_distance;
@@ -196,6 +218,31 @@ public class BasicUnit : MonoBehaviour
             nextCheckTime = Time.time + CheckTime;
             MyJob.TimeLeft -= 1;
 
+            // for jobs in buildings, check that the building still exists
+
+            if (MyJob.Type == JobType.Fire_Mortar)
+            {
+                bool stillExists = false;
+
+                foreach (Transform building in mapController.BuildingsTransform)
+                {
+                    if (building.GetInstanceID() != mapController.BuildingsTransform.GetInstanceID()
+                        & building.tag == "Building")
+                    if ((Vector2)building.position == new Vector2(MyJob.Location[0], MyJob.Location[1]))
+                    {
+                        stillExists = true;
+                    }
+                }
+
+                if (!stillExists)
+                {
+                    Debug.Log("My building is missing! Getting new job.");
+                    MyJob = null;
+                    return;
+                }
+            }
+
+            // process finished jobs
             if (MyJob.TimeLeft <= 0)
             {
                 switch (MyJob.Type)
@@ -212,6 +259,11 @@ public class BasicUnit : MonoBehaviour
 
                     case JobType.Build_Mortar:
                         mapController.BuildMortar(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
+
+                    case JobType.Fire_Mortar:
+                        queue.Jobs.Add(new Job(MyJob.Location, JobType.Fire_Mortar, JobTimes.FIRE_MORTAR));
                         MyJob = null;
                         break;
                 }

@@ -160,7 +160,7 @@ public class MapController : MonoBehaviour
         RefreshTileTrench(x, y - 1);
         RefreshTileTrench(x, y + 1);
         
-        queue.Jobs.Add(new Job(location_array, JobType.Dig_Trench, 10));
+        queue.Jobs.Add(new Job(location_array, JobType.Dig_Trench, JobTimes.DIG_TRENCH));
         
         // Debug.Log(queue.Jobs.Count);
         
@@ -208,9 +208,9 @@ public class MapController : MonoBehaviour
 
         RefreshTileTrench(x, y - 2);
 
-        queue.Jobs.Add(new Job(location_array, JobType.Build_Mortar, 30));
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Mortar, JobTimes.BUILD_MORTAR));
 
-        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Mortar], new Vector2(x, y), Quaternion.identity);
+        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Mortar], new Vector3(x, y, 1f), Quaternion.identity);
         Transform new_transform = new_mortar.GetComponent<Transform>();
         new_transform.parent = BuildingsTransform;
         return true;
@@ -243,7 +243,7 @@ public class MapController : MonoBehaviour
         RefreshTileWall(x, y - 1);
         RefreshTileWall(x, y + 1);
         
-        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, 20));
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, JobTimes.BUILD_WALL));
         
         // Debug.Log(queue.Jobs.Count);
         
@@ -351,9 +351,12 @@ public class MapController : MonoBehaviour
             }
         }
 
-        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Mortar], new Vector2(x, y), Quaternion.identity);
+        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Mortar], new Vector3(x, y, 1f), Quaternion.identity);
         Transform new_transform = new_mortar.GetComponent<Transform>();
         new_transform.parent = BuildingsTransform;
+
+        queue.Jobs.Add(new Job(new int[] {x,y}, JobType.Fire_Mortar, JobTimes.FIRE_MORTAR));
+        Debug.Log(queue.Jobs.Count);
     }
 
 
