@@ -483,29 +483,22 @@ public class MapController : MonoBehaviour
 
         // process penalties
 
-        guo.modifyWalkability = true;
-
-        // process walkability
         if (TileHelper.IsBuiltTrench(TileArray[x, y]))
         {
-            guo.setWalkability = true;
             guo.addPenalty = 1;
         } else if (TileHelper.IsBuiltWall(TileArray[x, y]))
         {
-            //Debug.Log("Setting wall to unwalkable: " + x + ", " + y);
+            guo.modifyWalkability = true;
             guo.setWalkability = false;
-            
         } else if (TileHelper.IsUnpassableBuilding(TileArray[x, y]))
         {
-            //Debug.Log("Setting building to unwalkable: " + x + ", " + y);
+            guo.modifyWalkability = true;
             guo.setWalkability = false;
         } else if (TileHelper.IsWalkableBuilding(TileArray[x, y]))
         {
-            guo.setWalkability = true;
             guo.addPenalty = 1;
         } else
         {
-            guo.setWalkability = true;
             guo.addPenalty = 30000;
         }
         
