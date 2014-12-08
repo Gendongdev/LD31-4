@@ -132,7 +132,23 @@ public class MapController : MonoBehaviour
             }
         }
     }
-    
+
+    public bool PlaceSentry(Vector2 location)
+    {
+        int x = (int)location.x;
+        int y = (int)location.y;
+
+        int[] location_array = new int[2] {x, y};
+
+        if (TileHelper.IsEmpty(TileArray[x, y]) | TileHelper.IsTrench(TileArray[x, y]))
+        {
+            queue.Jobs.Add(new Job(location_array, JobType.Sentry, JobTime.SENTRY));
+            return true;
+        }
+
+        return false;
+    }
+
     public bool PlaceTrenchTile(Vector2 location)
     {
         // Debug.Log("Placing tile at " + location);
@@ -160,7 +176,7 @@ public class MapController : MonoBehaviour
         RefreshTileTrench(x, y - 1);
         RefreshTileTrench(x, y + 1);
         
-        queue.Jobs.Add(new Job(location_array, JobType.Dig_Trench, JobTimes.DIG_TRENCH));
+        queue.Jobs.Add(new Job(location_array, JobType.Dig_Trench, JobTime.DIG_TRENCH));
         
         // Debug.Log(queue.Jobs.Count);
         
@@ -208,7 +224,7 @@ public class MapController : MonoBehaviour
 
         RefreshTileTrench(x, y - 2);
 
-        queue.Jobs.Add(new Job(location_array, JobType.Build_Mortar, JobTimes.BUILD_MORTAR));
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Mortar, JobTime.BUILD_MORTAR));
 
         GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Mortar], new Vector3(x, y, 1f), Quaternion.identity);
         Transform new_transform = new_mortar.GetComponent<Transform>();
@@ -243,7 +259,7 @@ public class MapController : MonoBehaviour
         RefreshTileWall(x, y - 1);
         RefreshTileWall(x, y + 1);
         
-        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, JobTimes.BUILD_WALL));
+        queue.Jobs.Add(new Job(location_array, JobType.Build_Wall, JobTime.BUILD_WALL));
         
         // Debug.Log(queue.Jobs.Count);
         
@@ -351,15 +367,21 @@ public class MapController : MonoBehaviour
             }
         }
 
-        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Mortar], new Vector3(x, y, 1f), Quaternion.identity);
+        GameObject new_mortar = (GameObject)Instantiate(Buildings[(int)BuildingType.Built_Mortar], new Vector3(x, y, 2f), Quaternion.identity);
         Transform new_transform = new_mortar.GetComponent<Transform>();
         new_transform.parent = BuildingsTransform;
 
-        queue.Jobs.Add(new Job(new int[] {x,y}, JobType.Fire_Mortar, JobTimes.FIRE_MORTAR));
+        queue.Jobs.Add(new Job(new int[] {x,y}, JobType.Fire_Mortar, JobTime.FIRE_MORTAR));
         Debug.Log(queue.Jobs.Count);
     }
 
 
+    public void FireMortar(int x, int y)
+    {
+        Debug.Log("Firing mortar at " + x + ", " + y);
+        GameObject new_player_mortar = (GameObject)Instantiate(gameController.PlayerMortarPrefab, new Vector3(x, y + 1.5f, -2f), Quaternion.identity);
+        new_player_mortar.GetComponent<Transform>().SetParent(gameController.ProjectileTransform);
+    }
 
     public void MortarHit(int hit_x, int hit_y)
     {
@@ -494,7 +516,7 @@ public class MapController : MonoBehaviour
         }
 
         Destroy(GameObjectArray[x, y]);
-        GameObject newObject = (GameObject)Instantiate(TileSprites[(int)TileArray[x, y]], new Vector3(x, y, 1f), 
+        GameObject newObject = (GameObject)Instantiate(TileSprites[(int)TileArray[x, y]], new Vector3(x, y, 3f), 
                                                        Quaternion.identity);
         
         Transform newTransform = newObject.GetComponent<Transform>();

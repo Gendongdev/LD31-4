@@ -263,7 +263,12 @@ public class BasicUnit : MonoBehaviour
                         break;
 
                     case JobType.Fire_Mortar:
-                        queue.Jobs.Add(new Job(MyJob.Location, JobType.Fire_Mortar, JobTimes.FIRE_MORTAR));
+                        queue.Jobs.Add(new Job(MyJob.Location, JobType.Fire_Mortar, JobTime.FIRE_MORTAR));
+                        mapController.FireMortar(MyJob.Location[0], MyJob.Location[1]);
+                        MyJob = null;
+                        break;
+
+                    case JobType.Sentry:
                         MyJob = null;
                         break;
                 }

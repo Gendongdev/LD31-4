@@ -8,7 +8,6 @@ public enum ControlMode
     Gun,
     Mortar,
     Wall,
-    Cancel,
     Sentry,
     Medic
 }
@@ -23,6 +22,8 @@ public class GameController : MonoBehaviour
     public GameObject SoldierPrefab;
     public GameObject EnemyBulletPrefab;
     public GameObject EnemyMortarPrefab;
+    public GameObject PlayerBulletPrefab;
+    public GameObject PlayerMortarPrefab;
     public Transform UnitTransform;
     public Transform ProjectileTransform;
     public float ReinforcementsTime = 20f;
@@ -158,7 +159,7 @@ public class GameController : MonoBehaviour
         Vector2 p = LevelCamera.ScreenToWorldPoint(Input.mousePosition);
         p.x = Mathf.Floor(p.x);
         p.y = Mathf.Floor(p.y);
-        if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall) 
+        if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall | Mode == ControlMode.Sentry) 
             & (p.x < 1 | p.x >= MapX - 1 | p.y < 1 | p.y >= MapY - 1))
             | ((Mode == ControlMode.Mortar) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2)))
         {
@@ -169,6 +170,7 @@ public class GameController : MonoBehaviour
             SelectionBox.transform.position = p;
         }
        
+        // process inputs that can be dragged
         if (Input.GetMouseButton(0) & SelectionBox.activeSelf)
         {
             switch (Mode)
@@ -182,15 +184,24 @@ public class GameController : MonoBehaviour
                 case ControlMode.Mortar:
                     mapController.PlaceMortar(p);
                     break;
-
             }
+        }
 
-        }
-        
-        if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
+        // process inputs that are just clicks
+        if (Input.GetMouseButtonDown(0) & SelectionBox.activeSelf)
         {
-            mapController.RemoveTile(p);
+            switch (Mode)
+            {
+                case ControlMode.Sentry:
+                    mapController.PlaceSentry(p);
+                    break;
+            }
         }
+                    
+//        if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
+//        {
+//            mapController.RemoveTile(p);
+//        }
     }
 
     void AddSoldier()
@@ -203,14 +214,14 @@ public class GameController : MonoBehaviour
     void AddEnemyBullet()
     {
         int bullet_x = Random.Range(0, MapX);
-        GameObject new_bullet = (GameObject)Instantiate(EnemyBulletPrefab, new Vector2(bullet_x, MapY), Quaternion.identity);
+        GameObject new_bullet = (GameObject)Instantiate(EnemyBulletPrefab, new Vector3(bullet_x, MapY, -2f), Quaternion.identity);
         new_bullet.GetComponent<Transform>().SetParent(ProjectileTransform);
     }
 
     void AddEnemyMortar()
     {
         int mortar_x = Random.Range(2, MapX - 2);
-        GameObject new_mortar = (GameObject)Instantiate(EnemyMortarPrefab, new Vector2(mortar_x, MapY), Quaternion.identity);
+        GameObject new_mortar = (GameObject)Instantiate(EnemyMortarPrefab, new Vector3(mortar_x, MapY, -2f), Quaternion.identity);
         new_mortar.GetComponent<Transform>().SetParent(ProjectileTransform);
     }
 
@@ -229,6 +240,28 @@ public class GameController : MonoBehaviour
             case ControlMode.Mortar:
                 SelectionBox.GetComponent<SpriteRenderer>().sprite = ThreeTileSelectionBox;
                 break;
+            case ControlMode.Sentry:
+                SelectionBox.GetComponent<SpriteRenderer>().sprite = OneTileSelectionBox;
+                break;
+        }
+    }
+
+    public void PlayerMortarHit()
+    {
+        if (enemyMortarFire)
+        {
+            nextEnemyMortarStateChange -= 1;
+        } else
+        {
+            nextEnemyMortarStateChange += 1;
+        }
+
+        if (enemyGunFire)
+        {
+            nextEnemyGunStateChange -= 1;
+        } else
+        {
+            nextEnemyGunStateChange += 1;
         }
     }
 }

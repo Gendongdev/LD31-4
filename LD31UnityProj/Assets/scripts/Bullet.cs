@@ -18,8 +18,8 @@ public class Bullet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector2 current_pos = transform.position;
-        Vector2 new_pos = new Vector2(current_pos.x, current_pos.y + BulletVelocity * Time.deltaTime);
+        Vector3 current_pos = transform.position;
+        Vector3 new_pos = new Vector3(current_pos.x, current_pos.y + BulletVelocity * Time.deltaTime, current_pos.z);
         transform.position = new_pos;
 
         if (transform.position.y < -0.5)
@@ -46,10 +46,11 @@ public class Bullet : MonoBehaviour
             {
                 if (gameController.UnitTransform.GetInstanceID() != unit.GetInstanceID())
                 {
-                    if (unit.position == building_script.transform.position)
+                    if ((Vector2)(unit.position) == (Vector2)(building_script.transform.position))
                     {
                         BasicUnit unit_script = unit.GetComponent<BasicUnit>();
-                        unit_script.MoralePoints -= 1;
+                        if (unit_script != null)
+                            unit_script.MoralePoints -= 1;
                     }
                 }
             }

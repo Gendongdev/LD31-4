@@ -5,6 +5,7 @@ TextureImporter:
     21300000: units_0
     21300002: units_1
     21300004: units_2
+    21300006: units_3
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -70,6 +71,16 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 16
+        y: 32
+        width: 16
+        height: 16
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: units_3
+      rect:
+        serializedVersion: 2
+        x: 32
         y: 32
         width: 16
         height: 16

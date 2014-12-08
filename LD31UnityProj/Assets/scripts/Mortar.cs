@@ -9,6 +9,7 @@ public class Mortar : MonoBehaviour
     public int TargetYPos;
 
     private MapController mapController;
+
     void Awake()
     {
         mapController = GameObject.Find("map").GetComponent<MapController>();
@@ -21,8 +22,8 @@ public class Mortar : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector2 current_pos = transform.position;
-        Vector2 new_pos = new Vector2(current_pos.x, current_pos.y + MortarVelocity * Time.deltaTime);
+        Vector3 current_pos = transform.position;
+        Vector3 new_pos = new Vector3(current_pos.x, current_pos.y + MortarVelocity * Time.deltaTime, current_pos.z);
         transform.position = new_pos;
 
         if (transform.position.y <= TargetYPos)
