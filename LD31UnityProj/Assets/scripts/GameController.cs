@@ -175,12 +175,6 @@ public class GameController : MonoBehaviour
                 case ControlMode.Wall:
                     mapController.PlaceWallTile(p);
                     break;
-                case ControlMode.Mortar:
-                    mapController.PlaceMortar(p);
-                    break;
-                case ControlMode.Medic:
-                    mapController.PlaceMedic(p);
-                    break;
             }
         }
 
@@ -192,9 +186,15 @@ public class GameController : MonoBehaviour
                 case ControlMode.Sentry:
                     mapController.PlaceSentry(p);
                     break;
+                case ControlMode.Mortar:
+                    mapController.PlaceMortar(p);
+                    break;
+                case ControlMode.Medic:
+                    mapController.PlaceMedic(p);
+                    break;
             }
         }
-                    
+        
 //        if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
 //        {
 //            mapController.RemoveTile(p);
