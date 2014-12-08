@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 
-
 public enum ControlMode
 {
     Dig,
@@ -29,21 +28,15 @@ public class GameController : MonoBehaviour
     public float ReinforcementsTime = 20f;
     public float EnemyGunRate = 0.2f;
     public float EnemyMortarRate = 0.5f;
-
     public int FirstEnemyGunTime = 1;
     public int FirstEnemyMortarTime = 1;
-
     public float TimeBetweenEnemyMortarWave = 6;
     public float TimeBetweenEnemyGunWave = 5;
-
     public float DurationEnemyMortarWave = 6;
     public float DurationEnemyGunWave = 5;
-
     public ControlMode Mode = ControlMode.Dig;
     public Transform[] Buttons;
-
     public UnityEngine.UI.Text StatusText;
-
     public Sprite OneTileSelectionBox;
     public Sprite ThreeTileSelectionBox;
 
@@ -51,10 +44,8 @@ public class GameController : MonoBehaviour
     private float nextReinforcement;
     private float nextEnemyGun;
     private float nextEnemyMortar;
-
     private float nextEnemyGunStateChange;
     private float nextEnemyMortarStateChange;
-
     private bool enemyMortarFire;
     private bool enemyGunFire;
 
@@ -159,9 +150,12 @@ public class GameController : MonoBehaviour
         Vector2 p = LevelCamera.ScreenToWorldPoint(Input.mousePosition);
         p.x = Mathf.Floor(p.x);
         p.y = Mathf.Floor(p.y);
-        if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall | Mode == ControlMode.Sentry) 
+
+        // control valid positions of selection box based on job mode
+        if (((Mode == ControlMode.Dig | Mode == ControlMode.Wall) 
             & (p.x < 1 | p.x >= MapX - 1 | p.y < 1 | p.y >= MapY - 1))
-            | ((Mode == ControlMode.Mortar) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2)))
+            | ((Mode == ControlMode.Mortar) & (p.x < 2 | p.x >= MapX - 2 | p.y < 2 | p.y >= MapY - 2))
+            | ((Mode == ControlMode.Sentry) & (p.x < 0 | p.x >= MapX | p.y < 0 | p.y >= MapY)))
         {
             SelectionBox.SetActive(false);
         } else
