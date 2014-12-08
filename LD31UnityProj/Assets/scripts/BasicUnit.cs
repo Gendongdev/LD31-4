@@ -69,7 +69,9 @@ public class BasicUnit : MonoBehaviour
                 // return job to queue.
                 if (MyJob != null)
                 {
-                    queue.Jobs.Add(MyJob);
+                    // don't return charge jobs
+                    if (MyJob.Type != JobType.Charge)
+                        queue.Jobs.Add(MyJob);
                     MyJob = null;
                 }
             }
@@ -137,6 +139,12 @@ public class BasicUnit : MonoBehaviour
             {
                 Vector2 this_job_pos = new Vector2(this_job.Location[0], this_job.Location[1]);
                 float this_job_distance = (this_job_pos - current_pos).magnitude;
+
+                // charge jobs take precedence over all others
+                if (this_job.Type == JobType.Charge)
+                {
+                    this_job_distance = -1f;
+                }
 
                 // make sure the tile is empty
 
@@ -313,7 +321,12 @@ public class BasicUnit : MonoBehaviour
         // Debug.Log("I died!");
 
         if (MyJob != null)
-            queue.Jobs.Add(MyJob);
+        {
+            // Charge jobs die with the soldier
+            if (MyJob.Type != JobType.Charge)
+                queue.Jobs.Add(MyJob);
+            MyJob = null;
+        }
 
         Destroy(gameObject);
     }

@@ -389,23 +389,22 @@ public class GameController : MonoBehaviour
 
     public void Charge()
     {
-        for (int i = 0; i < 5; i++)
+        if (IsRunning)
         {
             int charge_x = Random.Range(0, MapX);
             int[] location_array = new int[2] {charge_x, MapY};
             queue.Jobs.Add(new Job(location_array, JobType.Charge, JobTime.CHARGE));
+
+            // Charging kicks off enemy gunfire
+
+            enemyGunFire = true;
+            enemyMortarFire = true;
+
+            nextEnemyGunStateChange = Time.time + DurationEnemyGunWave;
+            nextEnemyGun = Time.time + EnemyGunRate;
+            nextEnemyMortarStateChange = Time.time + DurationEnemyMortarWave;
+            nextEnemyMortar = Time.time + EnemyMortarRate;
         }
-
-        // Charging kicks off enemy gunfire
-
-        enemyGunFire = true;
-        enemyMortarFire = true;
-
-        nextEnemyGunStateChange = Time.time + DurationEnemyGunWave;
-        nextEnemyGun = Time.time + EnemyGunRate;
-        nextEnemyMortarStateChange = Time.time + DurationEnemyMortarWave;
-        nextEnemyMortar = Time.time + EnemyMortarRate;
-        
     }
     
     public void ScorePoint()

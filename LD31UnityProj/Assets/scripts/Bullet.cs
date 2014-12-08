@@ -89,6 +89,7 @@ public class Bullet : MonoBehaviour
             if (hit_chance <= to_hit)
             {
                 unit_script.HitPoints -= 1;
+                unit_script.MoralePoints -= 1;
                 gameController.audio.clip = gameController.BulletHitSound;
                 gameController.audio.Play();
                 // Debug.Log("hp: " + unit_script.HitPoints);
