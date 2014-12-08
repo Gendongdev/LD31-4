@@ -1,5 +1,17 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
+
+
+public enum ControlMode
+{
+    Dig,
+    Gun,
+    Mortar,
+    Wall,
+    Cancel,
+    Sentry,
+    Medic
+}
 
 public class GameController : MonoBehaviour
 {
@@ -16,7 +28,7 @@ public class GameController : MonoBehaviour
     public float ReinforcementsTime = 20f;
     public float EnemyMachineGunRate = 0.2f;
     public int FirstEnemyMachineGunTime = 5;
-
+    public ControlMode Mode = ControlMode.Dig;
     public float EnemyMortarRate = 0.5f;
     public int FirstEnemyMortarTime = 1;
 
@@ -79,10 +91,19 @@ public class GameController : MonoBehaviour
             SelectionBox.SetActive(true);
             SelectionBox.transform.position = p;
         }
-        
+       
         if (Input.GetMouseButton(0) & SelectionBox.activeSelf)
         {
-            mapController.PlaceWallTile(p);
+            switch (Mode)
+            {
+                case ControlMode.Dig:
+                    mapController.PlaceTrenchTile(p);
+                    break;
+                case ControlMode.Wall:
+                    mapController.PlaceWallTile(p);
+                    break;
+            }
+
         }
         
         if (Input.GetMouseButton(1) & SelectionBox.activeSelf)
@@ -110,5 +131,10 @@ public class GameController : MonoBehaviour
         int mortar_x = Random.Range(2, MapX - 2);
         GameObject new_mortar = (GameObject)Instantiate(EnemyMortarPrefab, new Vector2(mortar_x, MapY), Quaternion.identity);
         new_mortar.GetComponent<Transform>().SetParent(ProjectileTransform);
+    }
+
+    public void SetMode(int mode)
+    {
+        Mode = (ControlMode)mode;
     }
 }
