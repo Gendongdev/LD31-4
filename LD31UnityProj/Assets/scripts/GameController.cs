@@ -154,13 +154,13 @@ public class GameController : MonoBehaviour
             {
                 nextEnemyGunStateChange = Time.time + TimeBetweenEnemyGunWave;
                 enemyGunFire = false;
-                TimeBetweenEnemyGunWave = TimeBetweenEnemyGunWave * 0.95f;
+                TimeBetweenEnemyGunWave = TimeBetweenEnemyGunWave * Random.Range(0.9f, 1.0f);
             } else
             {
                 nextEnemyGunStateChange = Time.time + DurationEnemyGunWave;
                 enemyGunFire = true;
                 nextEnemyGun = Time.time + EnemyGunRate;
-                DurationEnemyGunWave = DurationEnemyGunWave * 1.05f;
+                DurationEnemyGunWave = DurationEnemyGunWave * Random.Range(1.0f, 1.1f);
             }
         }
         if (Time.time > nextEnemyMortarStateChange)
@@ -169,13 +169,13 @@ public class GameController : MonoBehaviour
             {
                 nextEnemyMortarStateChange = Time.time + TimeBetweenEnemyMortarWave;
                 enemyMortarFire = false;
-                TimeBetweenEnemyMortarWave = TimeBetweenEnemyMortarWave * 0.95f;
+                TimeBetweenEnemyMortarWave = TimeBetweenEnemyMortarWave * Random.Range(0.9f, 1.0f);
             } else
             {
                 nextEnemyMortarStateChange = Time.time + DurationEnemyMortarWave;
                 enemyMortarFire = true;
                 nextEnemyMortar = Time.time + EnemyMortarRate;
-                DurationEnemyMortarWave = DurationEnemyMortarWave * 1.05f;
+                DurationEnemyMortarWave = DurationEnemyMortarWave * Random.Range(1.0f, 1.1f);
             }
         }
 
